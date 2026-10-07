@@ -32,4 +32,10 @@ internal sealed class FakeTicketRepository : ITicketRepository
         _tickets.Add(ticket);
         return Task.CompletedTask;
     }
+    public Task UpdateAsync(Ticket ticket, CancellationToken ct = default)
+{
+    var index = _tickets.FindIndex(t => t.Id == ticket.Id);
+    if (index >= 0) _tickets[index] = ticket;
+    return Task.CompletedTask;
+}
 }
