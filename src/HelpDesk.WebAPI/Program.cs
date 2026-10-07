@@ -4,6 +4,8 @@ using HelpDesk.Application.Tickets.Commands.ChangeTicketStatus;
 using HelpDesk.Application.Tickets.Commands.CreateTicket;
 using HelpDesk.Application.Tickets.Queries.GetTickets;
 using HelpDesk.Infrastructure.Persistence;
+using HelpDesk.WebAPI.Middleware;
+using HelpDesk.WebAPI.Services;
 using HelpDesk.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +19,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ITicketRepository, EfTicketRepository>();
 
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, HeaderCurrentUserService>();
 builder.Services.AddScoped<GetTicketsQueryHandler>();
 builder.Services.AddScoped<CreateTicketCommandHandler>();
 builder.Services.AddScoped<AssignTicketCommandHandler>();
@@ -38,6 +41,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+app.UseMiddleware<DomainExceptionMiddleware>();
 app.MapControllers();
 
 app.Run();
