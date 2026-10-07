@@ -14,19 +14,27 @@ public sealed class GetTicketByIdQueryHandler
         _tickets = tickets;
     }
 
-    public async Task<TicketListItemDto> HandleAsync(
+    public async Task<TicketDetailDto> HandleAsync(
         GetTicketByIdQuery query,
         CancellationToken ct = default)
     {
         var ticket = await _tickets.GetByIdAsync(query.TicketId, ct)
-            ?? throw new DomainException("Ticket not found.");
+            ?? throw new NotFoundException("Ticket not found.");
 
         if (!IsVisible(ticket, query.RequestingUserId, query.RequestingUserRole))
-            throw new DomainException("Ticket not found.");
+            throw new NotFoundException("Ticket not found.");
 
-        return new TicketListItemDto(
-            ticket.Id, ticket.Title, ticket.Status, ticket.Priority,
-            ticket.AssignedToId, ticket.CreatedById, ticket.CreatedAt, ticket.UpdatedAt);
+        return new TicketDetailDto(
+            ticket.Id,
+            ticket.Title,
+            ticket.Description,
+            ticket.Status,
+            ticket.Priority,
+            ticket.CategoryId,
+            ticket.AssignedToId,
+            ticket.CreatedById,
+            ticket.CreatedAt,
+            ticket.UpdatedAt);
     }
 
     private static bool IsVisible(Domain.Entities.Ticket ticket, Guid userId, UserRole role) => role switch

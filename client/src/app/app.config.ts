@@ -1,13 +1,13 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { routes } from './app.routes';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { routes } from './app.routes';
 import { userHeadersInterceptor } from './core/interceptors/user-headers.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
-    provideHttpClient(withInterceptors([userHeadersInterceptor]))
-  ]
+    provideRouter(routes, withComponentInputBinding()),
+    provideHttpClient(withInterceptors([userHeadersInterceptor])),
+  ],
 };

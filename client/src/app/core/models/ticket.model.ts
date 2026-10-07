@@ -28,3 +28,16 @@ export interface Category {
   id: string;
   name: string;
 }
+
+export interface TicketDetail {
+  id: string;
+  title: string;
+  description: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  categoryId: string;
+  assignedToId: string | null;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}

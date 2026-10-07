@@ -24,7 +24,7 @@
       </thead>
       <tbody>
         @for (ticket of tickets.value(); track ticket.id) {
-          <tr>
+          <tr [routerLink]="['/tickets', ticket.id]" class="ticket-list__row">
             <td>{{ ticket.title }}</td>
             <td>{{ statusLabel(ticket.status) }}</td>
             <td>{{ priorityLabel(ticket.priority) }}</td>

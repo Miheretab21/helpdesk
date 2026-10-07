@@ -60,15 +60,15 @@ public sealed class TicketsController : ControllerBase
         Guid CategoryId);
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<TicketListItemDto>> GetById(Guid id, CancellationToken ct)
+    public async Task<ActionResult<TicketDetailDto>> GetById(Guid id, CancellationToken ct)
     {
         var query = new GetTicketByIdQuery(
             TicketId: id,
             RequestingUserId: _currentUser.UserId,
             RequestingUserRole: _currentUser.Role);
 
-        var result = await _getTicketById.HandleAsync(query, ct);
-        return Ok(result);
+    var result = await _getTicketById.HandleAsync(query, ct);
+    return Ok(result);
     }
     [HttpPost]
     public async Task<ActionResult<Guid>> Create(

@@ -3,10 +3,11 @@ import { httpResource } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { TicketService } from '../../../core/services/ticket.service';
 import { TicketListItem, TicketPriority, TicketStatus } from '../../../core/models/ticket.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-ticket-list',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './ticket-list.component.html',
   styleUrl: './ticket-list.component.scss',
 })

@@ -1,0 +1,68 @@
+<div class="ticket-detail">
+  @if (ticket.isLoading()) {
+    <p class="ticket-detail__state">Loading…</p>
+  } @else if (ticket.error()) {
+    <p class="ticket-detail__state ticket-detail__state--error">
+      Could not load ticket.
+    </p>
+  } @else if (ticket.value(); as t) {
+    <header class="ticket-detail__header">
+      <h1>{{ t.title }}</h1>
+      <div class="ticket-detail__meta">
+        <span class="badge badge--status">{{ statusLabel(t.status) }}</span>
+        <span class="badge badge--priority">{{ priorityLabel(t.priority) }}</span>
+      </div>
+    </header>
+
+    <section class="ticket-detail__section">
+      <h2>Description</h2>
+      <p class="ticket-detail__description">{{ t.description }}</p>
+    </section>
+
+    <section class="ticket-detail__section">
+      <h2>Comments</h2>
+
+      @if (comments.value().length === 0) {
+        <p class="ticket-detail__state">No comments yet.</p>
+      } @else {
+        <ul class="ticket-detail__comments">
+          @for (comment of comments.value(); track comment.id) {
+            <li class="ticket-detail__comment">
+              <div class="ticket-detail__comment-meta">
+                <strong>{{ comment.authorId }}</strong>
+                <span>{{ comment.createdAt | date: 'short' }}</span>
+              </div>
+              <p>{{ comment.body }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="ticket-detail__section">
+      <h2>Add a comment</h2>
+
+      <form (ngSubmit)="submitComment()" class="ticket-detail__form">
+        <textarea
+          [(ngModel)]="newComment"
+          name="body"
+          rows="3"
+          placeholder="Write a comment…"
+          [disabled]="submitting()"></textarea>
+
+        @if (submitError()) {
+          <p class="ticket-detail__state ticket-detail__state--error">
+            {{ submitError() }}
+          </p>
+        }
+
+        <button
+          type="submit"
+          class="btn btn--primary"
+          [disabled]="submitting() || !newComment().trim()">
+          {{ submitting() ? 'Posting…' : 'Post Comment' }}
+        </button>
+      </form>
+    </section>
+  }
+</div>
