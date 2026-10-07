@@ -15,27 +15,36 @@ public sealed class DomainExceptionMiddleware
     }
 
     public async Task InvokeAsync(HttpContext context)
+{
+    try
     {
-        try
-        {
-            await _next(context);
-        }
-        catch (DomainException ex)
-        {
-            _logger.LogWarning(ex, "Domain rule violated: {Message}", ex.Message);
-
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/problem+json";
-
-            var problem = new ProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Business rule violation",
-                Detail = ex.Message,
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-            };
-
-            await context.Response.WriteAsJsonAsync(problem);
-        }
+        await _next(context);
     }
+    catch (NotFoundException ex)
+    {
+        _logger.LogInformation("Resource not found: {Message}", ex.Message);
+        await WriteProblemAsync(context, StatusCodes.Status404NotFound, "Not found", ex.Message);
+    }
+    catch (DomainException ex)
+    {
+        _logger.LogWarning(ex, "Domain rule violated: {Message}", ex.Message);
+        await WriteProblemAsync(context, StatusCodes.Status400BadRequest, "Business rule violation", ex.Message);
+    }
+}
+
+private static async Task WriteProblemAsync(HttpContext context, int status, string title, string detail)
+{
+    context.Response.StatusCode = status;
+    context.Response.ContentType = "application/problem+json";
+
+    var problem = new ProblemDetails
+    {
+        Status = status,
+        Title = title,
+        Detail = detail,
+        Type = "https://tools.ietf.org/html/rfc7231"
+    };
+
+    await context.Response.WriteAsJsonAsync(problem);
+}
 }
