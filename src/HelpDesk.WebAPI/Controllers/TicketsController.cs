@@ -3,6 +3,7 @@ using HelpDesk.Application.Tickets.Commands.AssignTicket;
 using HelpDesk.Application.Tickets.Commands.ChangeTicketStatus;
 using HelpDesk.Application.Tickets.Commands.CreateTicket;
 using HelpDesk.Application.Tickets.Dtos;
+using HelpDesk.Application.Tickets.Queries.GetTicketById;
 using HelpDesk.Application.Tickets.Queries.GetTickets;
 using HelpDesk.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ public sealed class TicketsController : ControllerBase
 {
     private readonly ICurrentUserService _currentUser;
     private readonly GetTicketsQueryHandler _getTickets;
+    private readonly GetTicketByIdQueryHandler _getTicketById;
     private readonly CreateTicketCommandHandler _createTicket;
     private readonly AssignTicketCommandHandler _assignTicket;
     private readonly ChangeTicketStatusCommandHandler _changeStatus;
@@ -22,12 +24,14 @@ public sealed class TicketsController : ControllerBase
     public TicketsController(
         ICurrentUserService currentUser,
         GetTicketsQueryHandler getTickets,
+        GetTicketByIdQueryHandler getTicketById,
         CreateTicketCommandHandler createTicket,
         AssignTicketCommandHandler assignTicket,
         ChangeTicketStatusCommandHandler changeStatus)
     {
         _currentUser = currentUser;
         _getTickets = getTickets;
+        _getTicketById = getTicketById;
         _createTicket = createTicket;
         _assignTicket = assignTicket;
         _changeStatus = changeStatus;
@@ -55,6 +59,17 @@ public sealed class TicketsController : ControllerBase
         TicketPriority Priority,
         Guid CategoryId);
 
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<TicketListItemDto>> GetById(Guid id, CancellationToken ct)
+    {
+        var query = new GetTicketByIdQuery(
+            TicketId: id,
+            RequestingUserId: _currentUser.UserId,
+            RequestingUserRole: _currentUser.Role);
+
+        var result = await _getTicketById.HandleAsync(query, ct);
+        return Ok(result);
+    }
     [HttpPost]
     public async Task<ActionResult<Guid>> Create(
         [FromBody] CreateTicketRequest request,
