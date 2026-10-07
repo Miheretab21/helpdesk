@@ -1,0 +1,37 @@
+<div class="ticket-list">
+  <header class="ticket-list__header">
+    <h1>Tickets</h1>
+    <button type="button" class="btn btn--primary">New Ticket</button>
+  </header>
+
+  @if (tickets.isLoading()) {
+    <p class="ticket-list__state">Loading tickets…</p>
+  } @else if (tickets.error()) {
+    <p class="ticket-list__state ticket-list__state--error">
+      Could not load tickets.
+    </p>
+  } @else if (tickets.value().length === 0) {
+    <p class="ticket-list__state">No tickets yet.</p>
+  } @else {
+    <table class="ticket-list__table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ticket of tickets.value(); track ticket.id) {
+          <tr>
+            <td>{{ ticket.title }}</td>
+            <td>{{ statusLabel(ticket.status) }}</td>
+            <td>{{ priorityLabel(ticket.priority) }}</td>
+            <td>{{ ticket.updatedAt | date: 'short' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
