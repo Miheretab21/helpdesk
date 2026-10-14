@@ -3,11 +3,13 @@ using HelpDesk.Application.Comments.Commands.AddComment;
 using HelpDesk.Application.Comments.Dtos;
 using HelpDesk.Application.Comments.Queries.GetComments;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HelpDesk.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/tickets/{ticketId:guid}/comments")]
+[Authorize]
 public sealed class CommentsController : ControllerBase
 {
     private readonly ICurrentUserService _currentUser;

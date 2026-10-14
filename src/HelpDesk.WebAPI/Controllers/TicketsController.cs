@@ -7,11 +7,13 @@ using HelpDesk.Application.Tickets.Queries.GetTicketById;
 using HelpDesk.Application.Tickets.Queries.GetTickets;
 using HelpDesk.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HelpDesk.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/tickets")]
+[Authorize]
 public sealed class TicketsController : ControllerBase
 {
     private readonly ICurrentUserService _currentUser;

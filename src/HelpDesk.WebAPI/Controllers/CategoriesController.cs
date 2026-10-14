@@ -1,11 +1,13 @@
 using HelpDesk.Application.Categories.Dtos;
 using HelpDesk.Application.Categories.Queries.GetCategories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HelpDesk.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/categories")]
+[Authorize]
 public sealed class CategoriesController : ControllerBase
 {
     private readonly GetCategoriesQueryHandler _getCategories;

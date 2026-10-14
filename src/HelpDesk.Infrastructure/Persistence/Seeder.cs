@@ -1,3 +1,4 @@
+using HelpDesk.Application.Abstractions;
 using HelpDesk.Domain.Entities;
 using HelpDesk.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -6,13 +7,15 @@ namespace HelpDesk.Infrastructure.Persistence;
 
 public static class Seeder
 {
-    public static async Task SeedAsync(AppDbContext db)
+    public static async Task SeedAsync(AppDbContext db, IPasswordHasher hasher)
     {
-        if (await db.Users.AnyAsync()) return; // already seeded
+        if (await db.Users.AnyAsync()) return;
 
-        var alice = new User("alice@example.com", "Alice Employee", "hash", UserRole.Employee);
-        var bob   = new User("bob@example.com",   "Bob Agent",      "hash", UserRole.Agent);
-        var carol = new User("carol@example.com", "Carol Admin",    "hash", UserRole.Admin);
+        var password = hasher.Hash("password123");
+
+        var alice = new User("alice@example.com", "Alice Employee", password, UserRole.Employee);
+        var bob   = new User("bob@example.com",   "Bob Agent",      password, UserRole.Agent);
+        var carol = new User("carol@example.com", "Carol Admin",    password, UserRole.Admin);
 
         var hardware = new Category("Hardware");
         var software = new Category("Software");
