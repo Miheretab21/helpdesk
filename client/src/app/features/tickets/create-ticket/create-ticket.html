@@ -1,0 +1,60 @@
+<div class="create-ticket">
+  <header class="create-ticket__header">
+    <h1>New Ticket</h1>
+    <a routerLink="/" class="create-ticket__back">← Back to list</a>
+  </header>
+
+  <form class="create-ticket__form" (ngSubmit)="submit()">
+    <label>
+      Title
+      <input
+        type="text"
+        [(ngModel)]="title"
+        name="title"
+        maxlength="200"
+        placeholder="Short summary of the issue"
+        required />
+    </label>
+
+    <label>
+      Description
+      <textarea
+        [(ngModel)]="description"
+        name="description"
+        rows="6"
+        maxlength="4000"
+        placeholder="What happened? Include any details that might help."
+        required></textarea>
+    </label>
+
+    <label>
+      Category
+      <select [(ngModel)]="categoryId" name="categoryId" required>
+        <option value="''">Select a category…</option>
+        @for (category of categories.value(); track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Priority
+      <select [(ngModel)]="priority" name="priority" required>
+        @for (p of priorities; track p.value) {
+          <option [value]="p.value">{{ p.label }}</option>
+        }
+      </select>
+    </label>
+
+    @if (error()) {
+      <p class="create-ticket__error">{{ error() }}</p>
+    }
+
+    <div class="create-ticket__actions">
+      <a routerLink="/" class="btn">Cancel</a>
+      <button type="submit" class="btn btn--primary" [disabled]="!canSubmit()">
+        {{ submitting() ? 'Creating…' : 'Create Ticket' }}
+      </button>
+    </div>
+  </form>
+</div>

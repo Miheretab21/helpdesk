@@ -20,6 +20,11 @@ export const routes: Routes = [
         .then(m => m.TicketListComponent),
       },
       {
+        path: 'tickets/new',
+        loadComponent: () =>
+          import('./features/tickets/create-ticket/create-ticket').then(m => m.CreateTicket),
+      },
+      {
     path: 'tickets/:id',
     loadComponent: () =>
       import('./features/tickets/ticket-detail/ticket-detail')

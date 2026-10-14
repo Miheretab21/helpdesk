@@ -1,6 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { TicketDetail, TicketListItem } from '../models/ticket.model';
+import { TicketDetail, TicketListItem, TicketPriority } from '../models/ticket.model';
+
+export interface CreateTicketRequest {
+  title: string;
+  description: string;
+  priority: TicketPriority;
+  categoryId: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
@@ -9,10 +16,12 @@ export class TicketService {
   list() {
     return this.api.get<TicketListItem[]>('/api/tickets');
   }
-  // getById(id: string) {
-  // return this.api.get<TicketListItem>(`/api/tickets/${id}`);
-  // }
+
   getById(id: string) {
-  return this.api.get<TicketDetail>(`/api/tickets/${id}`);
+    return this.api.get<TicketDetail>(`/api/tickets/${id}`);
+  }
+
+  create(request: CreateTicketRequest) {
+    return this.api.post<{ id: string }>('/api/tickets', request);
   }
 }

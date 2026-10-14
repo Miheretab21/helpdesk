@@ -6,8 +6,8 @@ using HelpDesk.Application.Tickets.Dtos;
 using HelpDesk.Application.Tickets.Queries.GetTicketById;
 using HelpDesk.Application.Tickets.Queries.GetTickets;
 using HelpDesk.Domain.Enums;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HelpDesk.WebAPI.Controllers;
 
@@ -39,6 +39,24 @@ public sealed class TicketsController : ControllerBase
         _changeStatus = changeStatus;
     }
 
+    // -----------------------------------------------------------------------
+    // Request / response contracts
+    // -----------------------------------------------------------------------
+    public sealed record CreateTicketRequest(
+        string Title,
+        string Description,
+        TicketPriority Priority,
+        Guid CategoryId);
+
+    public sealed record CreateTicketResponse(Guid Id);
+
+    public sealed record AssignTicketRequest(Guid AssignToUserId);
+
+    public sealed record ChangeStatusRequest(TicketStatus TargetStatus);
+
+    // -----------------------------------------------------------------------
+    // Endpoints
+    // -----------------------------------------------------------------------
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<TicketListItemDto>>> List(
         [FromQuery] TicketStatus? status,
@@ -55,12 +73,6 @@ public sealed class TicketsController : ControllerBase
         return Ok(result);
     }
 
-    public sealed record CreateTicketRequest(
-        string Title,
-        string Description,
-        TicketPriority Priority,
-        Guid CategoryId);
-
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TicketDetailDto>> GetById(Guid id, CancellationToken ct)
     {
@@ -69,11 +81,12 @@ public sealed class TicketsController : ControllerBase
             RequestingUserId: _currentUser.UserId,
             RequestingUserRole: _currentUser.Role);
 
-    var result = await _getTicketById.HandleAsync(query, ct);
-    return Ok(result);
+        var result = await _getTicketById.HandleAsync(query, ct);
+        return Ok(result);
     }
+
     [HttpPost]
-    public async Task<ActionResult<Guid>> Create(
+    public async Task<ActionResult<CreateTicketResponse>> Create(
         [FromBody] CreateTicketRequest request,
         CancellationToken ct)
     {
@@ -85,10 +98,8 @@ public sealed class TicketsController : ControllerBase
             CreatedById: _currentUser.UserId);
 
         var id = await _createTicket.HandleAsync(command, ct);
-        return CreatedAtAction(nameof(List), new { id }, id);
+        return CreatedAtAction(nameof(GetById), new { id }, new CreateTicketResponse(id));
     }
-
-    public sealed record AssignTicketRequest(Guid AssignToUserId);
 
     [HttpPost("{id:guid}/assign")]
     public async Task<IActionResult> Assign(
@@ -105,8 +116,6 @@ public sealed class TicketsController : ControllerBase
         await _assignTicket.HandleAsync(command, ct);
         return NoContent();
     }
-
-    public sealed record ChangeStatusRequest(TicketStatus TargetStatus);
 
     [HttpPost("{id:guid}/status")]
     public async Task<IActionResult> ChangeStatus(
