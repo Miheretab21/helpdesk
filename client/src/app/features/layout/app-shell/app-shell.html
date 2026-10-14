@@ -1,0 +1,16 @@
+<div class="shell">
+  <header class="shell__header">
+    <a routerLink="/" class="shell__brand">HelpDesk</a>
+
+    <div class="shell__user">
+      @if (auth.user(); as user) {
+        <span class="shell__name">{{ user.fullName }}</span>
+        <button type="button" class="shell__logout" (click)="auth.logout()">Sign out</button>
+      }
+    </div>
+  </header>
+
+  <main class="shell__content">
+    <router-outlet />
+  </main>
+</div>

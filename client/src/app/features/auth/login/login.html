@@ -1,0 +1,24 @@
+<div class="login">
+  <form class="login__form" (ngSubmit)="submit()">
+    <h1>Sign in</h1>
+    <p class="login__hint">Try: alice@example.com / bob@example.com / carol@example.com — password: password123</p>
+
+    <label>
+      Email
+      <input type="email" [(ngModel)]="email" name="email" autocomplete="username" required />
+    </label>
+
+    <label>
+      Password
+      <input type="password" [(ngModel)]="password" name="password" autocomplete="current-password" required />
+    </label>
+
+    @if (error()) {
+      <p class="login__error">{{ error() }}</p>
+    }
+
+    <button type="submit" class="btn btn--primary" [disabled]="submitting()">
+      {{ submitting() ? 'Signing in…' : 'Sign in' }}
+    </button>
+  </form>
+</div>
