@@ -52,9 +52,13 @@ export class TicketDetail {
   protected readonly currentUserId = computed(() => this.auth.user()?.id ?? '');
 
   protected readonly canClaim = computed(() => {
-    const t = this.ticket.value();
-    return !!t && this.isAgent() && t.assignedToId === null;
-  });
+  const t = this.ticket.value();
+  if (!t) return false;
+  if (!this.isAgent()) return false;
+  if (t.assignedToId !== null) return false;
+  if (t.status !== TicketStatus.New) return false;
+  return true;
+});
 
   protected readonly isAssignedToMe = computed(() => {
     const t = this.ticket.value();
@@ -77,6 +81,11 @@ export class TicketDetail {
     const t = this.ticket.value();
       if (!t || t.status !== TicketStatus.Resolved) return false;
       return this.isAssignedToMe() || this.isAdmin();
+});
+  protected readonly canCancel = computed(() => {
+  const t = this.ticket.value();
+  if (!t) return false;
+  return this.isEmployee() && t.createdById === this.currentUserId() && t.status === TicketStatus.New;
 });
 
   // ---------------------------------------------------------------------
@@ -150,4 +159,8 @@ export class TicketDetail {
       this.actionBusy.set(false);
     }
   }
+  protected async cancel(): Promise<void> {
+  if (!confirm('Cancel this ticket? This cannot be undone.')) return;
+  await this.runAction(() => this.ticketService.cancel(this.id()));
+}
 }

@@ -17,6 +17,8 @@ using HelpDesk.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using HelpDesk.Application.Tickets.Commands.CancelTicket;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +79,7 @@ builder.Services.AddScoped<GetCategoriesQueryHandler>();
 builder.Services.AddScoped<GetCommentsQueryHandler>();
 builder.Services.AddScoped<AddCommentCommandHandler>();
 builder.Services.AddScoped<LoginCommandHandler>();
+builder.Services.AddScoped<CancelTicketCommandHandler>();
 
 // ---------------------------------------------------------------------------
 // Current user + HTTP context

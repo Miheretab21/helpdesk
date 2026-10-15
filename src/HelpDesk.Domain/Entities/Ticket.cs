@@ -50,6 +50,16 @@ public class Ticket : Entity
         Status = TicketStatus.Assigned;
         Touch();
     }
+    public void Cancel(Guid byUserId)
+    {
+        if (CreatedById != byUserId)
+            throw new DomainException("Only the ticket's creator can cancel it.");
+        if (Status != TicketStatus.New)
+            throw new DomainException("Only a new ticket can be cancelled.");
+
+        Status = TicketStatus.Cancelled;
+        Touch();
+    }
 
     public void StartWork(Guid byUserId, bool isAdmin = false)
     {

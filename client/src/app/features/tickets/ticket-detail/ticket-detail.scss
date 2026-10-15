@@ -101,6 +101,7 @@
     display: none;
   }
 }
+
 }
 
 .badge {
@@ -141,4 +142,18 @@
       cursor: not-allowed;
     }
   }
+}
+.btn--danger {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: #b91c1c;
+    border-color: #b91c1c;
+  }
+}
+.badge--status[data-status="Cancelled"] {
+  background: #fee2e2;
+  color: #991b1b;
 }

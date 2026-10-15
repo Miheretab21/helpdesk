@@ -4,6 +4,7 @@ export enum TicketStatus {
   InProgress = 3,
   Resolved = 4,
   Closed = 5,
+  Cancelled = 6
 }
 
 export enum TicketPriority {

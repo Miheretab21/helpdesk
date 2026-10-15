@@ -27,6 +27,9 @@ export class TicketService {
   assign(ticketId: string, assignToUserId: string) {
     return this.api.post<void>(`/api/tickets/${ticketId}/assign`, { assignToUserId });
   }
+  cancel(ticketId: string) {
+    return this.api.post<void>(`/api/tickets/${ticketId}/cancel`, {});
+  }
   changeStatus(ticketId: string, targetStatus: TicketStatus) {
     return this.api.post<void>(`/api/tickets/${ticketId}/status`, { targetStatus });
   }

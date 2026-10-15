@@ -6,5 +6,6 @@ public enum TicketStatus
     Assigned = 2,
     InProgress = 3,
     Resolved = 4,
-    Closed = 5
+    Closed = 5,
+    Cancelled = 6,
 }

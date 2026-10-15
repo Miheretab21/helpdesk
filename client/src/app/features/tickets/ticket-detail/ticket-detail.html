@@ -38,6 +38,12 @@
           Close
         </button>
       }
+      @if (canCancel()) {
+  <button type="button" class="btn btn--danger"
+          [disabled]="actionBusy()" (click)="cancel()">
+    Cancel ticket
+  </button>
+}
       @if (actionError()) {
         <p class="ticket-detail__state ticket-detail__state--error">{{ actionError() }}</p>
       }

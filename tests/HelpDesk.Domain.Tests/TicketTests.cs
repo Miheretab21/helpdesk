@@ -183,4 +183,36 @@ public void NonAdmin_StillCannotActOnSomeoneElsesTicket()
     // Explicitly isAdmin: false — must still throw.
     Assert.Throws<DomainException>(() => ticket.StartWork(otherAgent, isAdmin: false));
 }
+[Fact]
+public void Creator_CanCancelNewTicket()
+{
+    var creatorId = Guid.NewGuid();
+    var ticket = new Ticket("T", "d", TicketPriority.Low, Guid.NewGuid(), creatorId);
+
+    ticket.Cancel(creatorId);
+
+    Assert.Equal(TicketStatus.Cancelled, ticket.Status);
+}
+
+[Fact]
+public void NonCreator_CannotCancelTicket()
+{
+    var creatorId = Guid.NewGuid();
+    var someoneElse = Guid.NewGuid();
+    var ticket = new Ticket("T", "d", TicketPriority.Low, Guid.NewGuid(), creatorId);
+
+    var ex = Assert.Throws<DomainException>(() => ticket.Cancel(someoneElse));
+    Assert.Contains("creator", ex.Message, StringComparison.OrdinalIgnoreCase);
+}
+
+[Fact]
+public void CannotCancelTicketThatIsAlreadyAssigned()
+{
+    var creatorId = Guid.NewGuid();
+    var ticket = new Ticket("T", "d", TicketPriority.Low, Guid.NewGuid(), creatorId);
+    ticket.AssignTo(Guid.NewGuid());
+
+    var ex = Assert.Throws<DomainException>(() => ticket.Cancel(creatorId));
+    Assert.Contains("new ticket", ex.Message, StringComparison.OrdinalIgnoreCase);
+}
 }

@@ -8,6 +8,7 @@ using HelpDesk.Application.Tickets.Queries.GetTickets;
 using HelpDesk.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using HelpDesk.Application.Tickets.Commands.CancelTicket;
 
 namespace HelpDesk.WebAPI.Controllers;
 
@@ -22,6 +23,7 @@ public sealed class TicketsController : ControllerBase
     private readonly CreateTicketCommandHandler _createTicket;
     private readonly AssignTicketCommandHandler _assignTicket;
     private readonly ChangeTicketStatusCommandHandler _changeStatus;
+    private readonly CancelTicketCommandHandler _cancelTicket;
 
     public TicketsController(
         ICurrentUserService currentUser,
@@ -29,7 +31,8 @@ public sealed class TicketsController : ControllerBase
         GetTicketByIdQueryHandler getTicketById,
         CreateTicketCommandHandler createTicket,
         AssignTicketCommandHandler assignTicket,
-        ChangeTicketStatusCommandHandler changeStatus)
+        ChangeTicketStatusCommandHandler changeStatus,
+        CancelTicketCommandHandler cancelTicket)
     {
         _currentUser = currentUser;
         _getTickets = getTickets;
@@ -37,6 +40,7 @@ public sealed class TicketsController : ControllerBase
         _createTicket = createTicket;
         _assignTicket = assignTicket;
         _changeStatus = changeStatus;
+        _cancelTicket = cancelTicket;
     }
 
     // -----------------------------------------------------------------------
@@ -116,6 +120,16 @@ public sealed class TicketsController : ControllerBase
         await _assignTicket.HandleAsync(command, ct);
         return NoContent();
     }
+    [HttpPost("{id:guid}/cancel")]
+public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
+{
+    var command = new CancelTicketCommand(
+        TicketId: id,
+        RequestingUserId: _currentUser.UserId);
+
+    await _cancelTicket.HandleAsync(command, ct);
+    return NoContent();
+}
 
     [HttpPost("{id:guid}/status")]
     public async Task<IActionResult> ChangeStatus(
