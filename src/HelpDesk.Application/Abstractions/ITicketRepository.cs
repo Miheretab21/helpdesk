@@ -12,6 +12,8 @@ public interface ITicketRepository
         TicketPriority? priority = null,
         Guid? categoryId = null,
         string? search = null,
+        TicketStatus? excludeStatus = null,
+        string? excludeStatuses = null,
         CancellationToken ct = default);
 
     Task AddAsync(Ticket ticket, CancellationToken ct = default);

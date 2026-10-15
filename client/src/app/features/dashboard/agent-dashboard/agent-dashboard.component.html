@@ -1,0 +1,72 @@
+<div class="dashboard-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="dashboard-sidebar">
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">My Tickets</h3>
+        <button
+          (click)="setActivePane(AgentDashboardPane.MyTickets)"
+          [class.sidebar-nav__item--active]="activePane() === AgentDashboardPane.MyTickets"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">My Assigned Tickets</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Queue</h3>
+        <button
+          (click)="setActivePane(AgentDashboardPane.UnassignedQueue)"
+          [class.sidebar-nav__item--active]="activePane() === AgentDashboardPane.UnassignedQueue"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">Unassigned Tickets</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Activity</h3>
+        <button
+          (click)="setActivePane(AgentDashboardPane.RecentActivity)"
+          [class.sidebar-nav__item--active]="activePane() === AgentDashboardPane.RecentActivity"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">Recent Activity</span>
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content Pane -->
+  <main class="dashboard-main">
+    @if (agentData.isLoading()) {
+      <div class="dashboard__loading">
+        <app-spinner size="large" />
+        <p>Loading dashboard…</p>
+      </div>
+    } @else if (agentData.error()) {
+      <p class="dashboard__error">Could not load dashboard data.</p>
+    } @else {
+      @switch (activePane()) {
+        @case (AgentDashboardPane.MyTickets) {
+          <app-dashboard-ticket-pane
+            title="My Assigned Tickets"
+            [filters]="{ excludeStatuses: [TicketStatus.New, TicketStatus.Cancelled] }"
+            emptyMessage="No assigned tickets.">
+          </app-dashboard-ticket-pane>
+        }
+        @case (AgentDashboardPane.UnassignedQueue) {
+          <app-dashboard-ticket-pane
+            title="Unassigned Tickets"
+            [filters]="{ status: TicketStatus.New, unassignedOnly: true }"
+            emptyMessage="No unassigned tickets. Great job!">
+          </app-dashboard-ticket-pane>
+        }
+        @case (AgentDashboardPane.RecentActivity) {
+          <app-dashboard-ticket-pane
+            title="Recent Activity"
+            [filters]="{ }"
+            emptyMessage="No recent activity.">
+          </app-dashboard-ticket-pane>
+        }
+      }
+    }
+  </main>
+</div>

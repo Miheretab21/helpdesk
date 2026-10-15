@@ -74,6 +74,8 @@ public sealed class TicketsController : ControllerBase
         [FromQuery] TicketPriority? priority,
         [FromQuery] Guid? categoryId,
         [FromQuery] string? search,
+        [FromQuery] TicketStatus? excludeStatus,
+        [FromQuery] string? excludeStatuses,
         CancellationToken ct)
     {
         var query = new GetTicketsQuery(
@@ -82,7 +84,9 @@ public sealed class TicketsController : ControllerBase
             StatusFilter: status,
             PriorityFilter: priority,
             CategoryFilter: categoryId,
-            SearchFilter: search);
+            SearchFilter: search,
+            ExcludeStatusFilter: excludeStatus,
+            ExcludeStatusesFilter: excludeStatuses);
 
         var result = await _getTickets.HandleAsync(query, ct);
         return Ok(result);

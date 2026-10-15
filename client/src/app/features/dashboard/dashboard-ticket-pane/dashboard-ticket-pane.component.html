@@ -1,0 +1,46 @@
+<section class="dashboard__section dashboard-pane">
+  <h2>{{ title }}</h2>
+
+  @if (tickets.isLoading()) {
+    <div class="dashboard-pane__loading">
+      <app-spinner size="medium" />
+      <p>Loading tickets…</p>
+    </div>
+  } @else if (tickets.error()) {
+    <p class="dashboard-pane__error">Could not load tickets.</p>
+  } @else if (tickets.value().length === 0) {
+    <p class="dashboard-pane__empty">{{ emptyMessage }}</p>
+  } @else {
+    <div class="tickets-table">
+      <div class="table-header">
+        <div class="table-col table-col--title">Ticket</div>
+        <div class="table-col table-col--status">Status</div>
+        <div class="table-col table-col--priority">Priority</div>
+        <div class="table-col table-col--updated">Updated</div>
+      </div>
+
+      <div class="table-body">
+        @for (ticket of tickets.value(); track ticket.id) {
+          <a [routerLink]="['/tickets', ticket.id]" class="table-row">
+            <div class="table-col table-col--title">
+              <div class="ticket-title">{{ ticket.title }}</div>
+            </div>
+            <div class="table-col table-col--status">
+              <span class="badge badge--status">{{ statusLabel(ticket.status) }}</span>
+            </div>
+            <div class="table-col table-col--priority">
+              <span class="badge" [class]="'badge--' + getPriorityClass(ticket.priority)">
+                {{ priorityLabel(ticket.priority) }}
+              </span>
+            </div>
+            <div class="table-col table-col--updated">
+              <time [dateTime]="ticket.updatedAt | date: 'yyyy-MM-dd'">
+                {{ ticket.updatedAt | date: 'short' }}
+              </time>
+            </div>
+          </a>
+        }
+      </div>
+    </div>
+  }
+</section>

@@ -23,6 +23,8 @@ public sealed class GetTicketsQueryHandler
             query.PriorityFilter,
             query.CategoryFilter,
             query.SearchFilter,
+            query.ExcludeStatusFilter,
+            query.ExcludeStatusesFilter,
             ct);
 
         var visible = ApplyVisibilityRule(tickets, query.RequestingUserId, query.RequestingUserRole);

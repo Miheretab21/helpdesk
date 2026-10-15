@@ -4,6 +4,12 @@ export enum UserRole {
   Admin = 3,
 }
 
+export const UserRoleLabels: Record<UserRole, string> = {
+  [UserRole.Employee]: 'Employee',
+  [UserRole.Agent]: 'Agent',
+  [UserRole.Admin]: 'Admin',
+};
+
 export interface User {
   id: string;
   fullName: string;

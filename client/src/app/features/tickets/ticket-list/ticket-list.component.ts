@@ -2,6 +2,7 @@ import { Component, computed, inject, effect } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TicketService, TicketFilters } from '../../../core/services/ticket.service';
 import { TicketListItem, TicketPriority, TicketStatus } from '../../../core/models/ticket.model';
 import { CategoryService } from '../../../core/services/category.service';
@@ -23,6 +24,7 @@ import { debounceTime, Subject } from 'rxjs';
 export class TicketListComponent {
   private readonly ticketService = inject(TicketService);
   private readonly categoryService = inject(CategoryService);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly TicketStatus = TicketStatus;
   protected readonly TicketPriority = TicketPriority;
@@ -32,6 +34,7 @@ export class TicketListComponent {
   protected readonly priorityFilter = signal<TicketPriority | null>(null);
   protected readonly categoryFilter = signal<string | null>(null);
   protected readonly searchFilter = signal<string>('');
+  protected readonly unassignedOnlyFilter = signal<boolean>(false);
 
   private readonly searchSubject = new Subject<string>();
 
@@ -44,7 +47,8 @@ export class TicketListComponent {
     return this.statusFilter() !== null ||
            this.priorityFilter() !== null ||
            this.categoryFilter() !== null ||
-           this.searchFilter().trim() !== '';
+           this.searchFilter().trim() !== '' ||
+           this.unassignedOnlyFilter();
   });
 
   protected readonly currentFilters = computed<TicketFilters>(() => {
@@ -66,6 +70,8 @@ export class TicketListComponent {
       if (filters.priority !== undefined) params.append('priority', filters.priority.toString());
       if (filters.categoryId) params.append('categoryId', filters.categoryId);
       if (filters.search) params.append('search', filters.search);
+      // Add unassigned filter if needed
+      if (this.unassignedOnlyFilter()) params.append('unassignedOnly', 'true');
       const queryString = params.toString();
       if (queryString) url += `?${queryString}`;
       return url;
@@ -86,11 +92,16 @@ export class TicketListComponent {
     this.priorityFilter.set(null);
     this.categoryFilter.set(null);
     this.searchFilter.set('');
+    this.unassignedOnlyFilter.set(false);
   }
 
   protected auth = inject(AuthService);
   protected readonly UserRole = UserRole;
   protected readonly canCreateTicket = computed(() => this.auth.isInRole(UserRole.Employee));
+  protected readonly isEmployee = computed(() => this.auth.isInRole(UserRole.Employee));
+  protected readonly isAgent = computed(() => this.auth.isInRole(UserRole.Agent));
+  protected readonly isAdmin = computed(() => this.auth.isInRole(UserRole.Admin));
+  protected readonly shouldShowPriorityFilter = computed(() => !this.isEmployee());
 
   constructor() {
     // Set up debounced search
@@ -102,6 +113,23 @@ export class TicketListComponent {
     effect(() => {
       // This effect runs whenever currentFilters changes, causing tickets to reload
       this.currentFilters();
+    });
+
+    // Read query params from URL
+    effect(() => {
+      this.route.queryParams.subscribe(params => {
+        // Check for unassigned filter (when assignedToId=null is passed)
+        if (params['assignedToId'] === 'null') {
+          this.unassignedOnlyFilter.set(true);
+        } else {
+          this.unassignedOnlyFilter.set(false);
+        }
+        
+        // Check for status filter in query params
+        if (params['status']) {
+          this.statusFilter.set(parseInt(params['status']));
+        }
+      });
     });
   }
 

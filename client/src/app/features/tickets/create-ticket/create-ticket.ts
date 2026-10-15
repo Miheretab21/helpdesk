@@ -64,4 +64,9 @@ export class CreateTicket {
       this.submitting.set(false);
     }
   }
+
+  protected onPriorityChange(event: Event): void {
+    const value = parseInt((event.target as HTMLSelectElement).value, 10) as TicketPriority;
+    this.priority.set(value);
+  }
 }

@@ -29,4 +29,22 @@ public sealed class EfUserRepository : IUserRepository
             .OrderBy(u => u.FullName)
             .ToListAsync(ct);
     }
+
+    public async Task AddAsync(User user, CancellationToken ct = default)
+    {
+        await _db.Users.AddAsync(user, ct);
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateAsync(User user, CancellationToken ct = default)
+    {
+        _db.Users.Update(user);
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteAsync(User user, CancellationToken ct = default)
+    {
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync(ct);
+    }
 }

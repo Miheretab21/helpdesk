@@ -1,0 +1,149 @@
+<div class="user-management">
+  <div class="user-management__header">
+    <h2 class="user-management__title">User Management</h2>
+    <button
+      (click)="openCreateModal()"
+      class="btn btn--primary">
+      + Add User
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="user-management__error">
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="user-management__loading">
+      <app-spinner size="large" />
+      <p>Loading users…</p>
+    </div>
+  } @else if (users().length === 0) {
+    <div class="user-management__empty">
+      <p>No users found. <a (click)="openCreateModal()" href="javascript:void(0)">Create one</a>.</p>
+    </div>
+  } @else {
+    <div class="user-management__table">
+      <table class="users-table">
+        <thead>
+          <tr class="users-table__header-row">
+            <th class="users-table__cell">Name</th>
+            <th class="users-table__cell">Email</th>
+            <th class="users-table__cell">Role</th>
+            <th class="users-table__cell users-table__cell--actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr class="users-table__row">
+              <td class="users-table__cell">{{ user.fullName }}</td>
+              <td class="users-table__cell">{{ user.email }}</td>
+              <td class="users-table__cell">{{ UserRoleLabels[user.role] }}</td>
+              <td class="users-table__cell users-table__cell--actions">
+                <button
+                  (click)="openEditModal(user)"
+                  class="btn btn--small btn--secondary">
+                  Edit
+                </button>
+                <button
+                  (click)="deleteUser(user)"
+                  [disabled]="isSubmitting()"
+                  class="btn btn--small btn--danger">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+          <h3 class="modal__title">{{ modalTitle() }}</h3>
+          <button
+            (click)="closeModal()"
+            class="modal__close">
+            ×
+          </button>
+        </div>
+
+        <div class="modal__body">
+          @if (error()) {
+            <div class="modal__error">{{ error() }}</div>
+          }
+
+          <form (ngSubmit)="submitForm()" class="user-form">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-input"
+                [value]="form().email"
+                [disabled]="isEditMode()"
+                (change)="onEmailChange($event)"
+                required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input
+                type="text"
+                class="form-input"
+                [value]="form().fullName"
+                (change)="onFullNameChange($event)"
+                required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select
+                class="form-input"
+                [value]="form().role"
+                (change)="onRoleChange($event)">
+                <option [value]="UserRole.Employee">{{ UserRoleLabels[UserRole.Employee] }}</option>
+                <option [value]="UserRole.Agent">{{ UserRoleLabels[UserRole.Agent] }}</option>
+                <option [value]="UserRole.Admin">{{ UserRoleLabels[UserRole.Admin] }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                Password
+                @if (isEditMode()) {
+                  <span class="form-hint">(leave blank to keep current password)</span>
+                }
+              </label>
+              <input
+                type="password"
+                class="form-input"
+                [value]="form().password"
+                (change)="onPasswordChange($event)"
+                [required]="!isEditMode()" />
+            </div>
+
+            <div class="modal__footer">
+              <button
+                type="button"
+                (click)="closeModal()"
+                class="btn btn--secondary">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="btn btn--primary">
+                {{ isSubmitting() ? 'Saving…' : 'Save' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>

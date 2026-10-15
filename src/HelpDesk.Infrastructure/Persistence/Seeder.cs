@@ -31,10 +31,41 @@ public static class Seeder
             TicketPriority.Medium, software.Id, alice.Id);
         var ticket3 = new Ticket("Wi-Fi drops every hour", "Connection resets.",
             TicketPriority.Low, network.Id, alice.Id);
+        var ticket4 = new Ticket("Monitor flickering", "Screen flickers intermittently.",
+            TicketPriority.Medium, hardware.Id, alice.Id);
+        var ticket5 = new Ticket("Printer offline", "Cannot connect to network printer.",
+            TicketPriority.High, network.Id, alice.Id);
+        var ticket6 = new Ticket("Software license expired", "Need to renew license.",
+            TicketPriority.Low, software.Id, alice.Id);
+        var ticket7 = new Ticket("Email sync issues", "Outlook not syncing emails.",
+            TicketPriority.High, software.Id, alice.Id);
+
+        // New status (unassigned)
+        // ticket1 stays as New
+
+        // Assigned status (assigned to bob)
         ticket2.AssignTo(bob.Id);
         ticket3.AssignTo(bob.Id);
 
-        db.Tickets.AddRange(ticket1, ticket2, ticket3);
+        // InProgress status
+        ticket4.AssignTo(bob.Id);
+        ticket4.GetType().GetProperty("Status")?.SetValue(ticket4, TicketStatus.InProgress);
+
+        // Resolved status
+        ticket5.AssignTo(bob.Id);
+        ticket5.GetType().GetProperty("Status")?.SetValue(ticket5, TicketStatus.InProgress);
+        ticket5.GetType().GetProperty("Status")?.SetValue(ticket5, TicketStatus.Resolved);
+
+        // Closed status
+        ticket6.AssignTo(bob.Id);
+        ticket6.GetType().GetProperty("Status")?.SetValue(ticket6, TicketStatus.InProgress);
+        ticket6.GetType().GetProperty("Status")?.SetValue(ticket6, TicketStatus.Resolved);
+        ticket6.GetType().GetProperty("Status")?.SetValue(ticket6, TicketStatus.Closed);
+
+        // Cancelled status
+        ticket7.GetType().GetProperty("Status")?.SetValue(ticket7, TicketStatus.Cancelled);
+
+        db.Tickets.AddRange(ticket1, ticket2, ticket3, ticket4, ticket5, ticket6, ticket7);
         await db.SaveChangesAsync();
     }
 }

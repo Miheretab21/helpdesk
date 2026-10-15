@@ -22,12 +22,31 @@ public sealed class EfTicketRepository : ITicketRepository
         TicketPriority? priority = null,
         Guid? categoryId = null,
         string? search = null,
+        TicketStatus? excludeStatus = null,
+        string? excludeStatuses = null,
         CancellationToken ct = default)
     {
         IQueryable<Ticket> query = _db.Tickets.AsNoTracking();
 
         if (status is not null)
             query = query.Where(t => t.Status == status);
+
+        if (excludeStatus is not null)
+            query = query.Where(t => t.Status != excludeStatus);
+
+        // Parse comma-separated excluded statuses
+        if (!string.IsNullOrWhiteSpace(excludeStatuses))
+        {
+            var excludedStatusList = excludeStatuses
+                .Split(',')
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrEmpty(s) && int.TryParse(s, out _))
+                .Select(s => (TicketStatus)int.Parse(s))
+                .ToList();
+
+            if (excludedStatusList.Count > 0)
+                query = query.Where(t => !excludedStatusList.Contains(t.Status));
+        }
 
         if (priority is not null)
             query = query.Where(t => t.Priority == priority);

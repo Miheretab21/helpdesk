@@ -5,6 +5,9 @@ using HelpDesk.Application.Categories.Queries.GetCategories;
 using HelpDesk.Application.Comments.Commands.AddComment;
 using HelpDesk.Application.Comments.Queries.GetComments;
 using HelpDesk.Application.Dashboard.Queries.GetMetrics;
+using HelpDesk.Application.Dashboard.Queries.GetEmployeeDashboard;
+using HelpDesk.Application.Dashboard.Queries.GetAgentDashboard;
+using HelpDesk.Application.Dashboard.Queries.GetAdminDashboard;
 using HelpDesk.Application.Tickets.Commands.AssignTicket;
 using HelpDesk.Application.Tickets.Commands.ChangeTicketStatus;
 using HelpDesk.Application.Tickets.Commands.CreateTicket;
@@ -12,6 +15,9 @@ using HelpDesk.Application.Tickets.Queries.GetTicketById;
 using HelpDesk.Application.Tickets.Queries.GetTickets;
 using HelpDesk.Application.Users.Queries.GetUsers;
 using HelpDesk.Application.Users.Queries.GetUserById;
+using HelpDesk.Application.Users.Commands.CreateUser;
+using HelpDesk.Application.Users.Commands.UpdateUser;
+using HelpDesk.Application.Users.Commands.DeleteUser;
 using HelpDesk.Infrastructure.Persistence;
 using HelpDesk.Infrastructure.Persistence.Repositories;
 using HelpDesk.Infrastructure.Security;
@@ -87,8 +93,14 @@ builder.Services.AddScoped<LoginCommandHandler>();
 builder.Services.AddScoped<CancelTicketCommandHandler>();
 builder.Services.AddScoped<EditTicketCommandHandler>();
 builder.Services.AddScoped<GetMetricsQueryHandler>();
+builder.Services.AddScoped<GetEmployeeDashboardQueryHandler>();
+builder.Services.AddScoped<GetAgentDashboardQueryHandler>();
+builder.Services.AddScoped<GetAdminDashboardQueryHandler>();
 builder.Services.AddScoped<GetUsersQueryHandler>();
 builder.Services.AddScoped<GetUserByIdQueryHandler>();
+builder.Services.AddScoped<CreateUserCommandHandler>();
+builder.Services.AddScoped<UpdateUserCommandHandler>();
+builder.Services.AddScoped<DeleteUserCommandHandler>();
 
 // ---------------------------------------------------------------------------
 // Current user + HTTP context

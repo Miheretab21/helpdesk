@@ -28,13 +28,15 @@
         <option [value]="TicketStatus.Cancelled">Cancelled</option>
       </select>
 
-      <select [(ngModel)]="priorityFilter" class="ticket-list__filter-select">
-        <option [value]="null">All Priorities</option>
-        <option [value]="TicketPriority.Low">Low</option>
-        <option [value]="TicketPriority.Medium">Medium</option>
-        <option [value]="TicketPriority.High">High</option>
-        <option [value]="TicketPriority.Urgent">Urgent</option>
-      </select>
+      @if (shouldShowPriorityFilter()) {
+        <select [(ngModel)]="priorityFilter" class="ticket-list__filter-select">
+          <option [value]="null">All Priorities</option>
+          <option [value]="TicketPriority.Low">Low</option>
+          <option [value]="TicketPriority.Medium">Medium</option>
+          <option [value]="TicketPriority.High">High</option>
+          <option [value]="TicketPriority.Urgent">Urgent</option>
+        </select>
+      }
 
       <select [(ngModel)]="categoryFilter" class="ticket-list__filter-select">
         <option [value]="null">All Categories</option>

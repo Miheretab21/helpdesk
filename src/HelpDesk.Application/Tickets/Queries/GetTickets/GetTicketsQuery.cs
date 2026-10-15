@@ -8,4 +8,6 @@ public sealed record GetTicketsQuery(
     TicketStatus? StatusFilter = null,
     TicketPriority? PriorityFilter = null,
     Guid? CategoryFilter = null,
-    string? SearchFilter = null);
+    string? SearchFilter = null,
+    TicketStatus? ExcludeStatusFilter = null,
+    string? ExcludeStatusesFilter = null);

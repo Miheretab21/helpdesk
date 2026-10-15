@@ -1,0 +1,103 @@
+<div class="dashboard-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="dashboard-sidebar">
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Overview</h3>
+        <button
+          (click)="setActivePane(AdminDashboardPane.All)"
+          [class.sidebar-nav__item--active]="activePane() === AdminDashboardPane.All"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">All Tickets</span>
+        </button>
+        <button
+          (click)="setActivePane(AdminDashboardPane.Unassigned)"
+          [class.sidebar-nav__item--active]="activePane() === AdminDashboardPane.Unassigned"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">Unassigned</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Status</h3>
+        @for (item of statusCounts(); track item.status) {
+          <button
+            (click)="selectStatus(item.status)"
+            [class.sidebar-nav__item--active]="activePane() === AdminDashboardPane.ByStatus && selectedStatus() === item.status"
+            class="sidebar-nav__item sidebar-nav__item--secondary">
+            <span class="sidebar-nav__label">{{ item.label }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Activity</h3>
+        <button
+          (click)="setActivePane(AdminDashboardPane.RecentActivity)"
+          [class.sidebar-nav__item--active]="activePane() === AdminDashboardPane.RecentActivity"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">Recent Activity</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Administration</h3>
+        <button
+          (click)="setActivePane(AdminDashboardPane.UserManagement)"
+          [class.sidebar-nav__item--active]="activePane() === AdminDashboardPane.UserManagement"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">User Management</span>
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content Pane -->
+  <main class="dashboard-main">
+    @if (adminData.isLoading()) {
+      <div class="dashboard__loading">
+        <app-spinner size="large" />
+        <p>Loading dashboard…</p>
+      </div>
+    } @else if (adminData.error()) {
+      <p class="dashboard__error">Could not load dashboard data.</p>
+    } @else {
+      @switch (activePane()) {
+        @case (AdminDashboardPane.All) {
+          <app-dashboard-ticket-pane
+            title="All Tickets"
+            [filters]="{ }"
+            emptyMessage="No tickets in system.">
+          </app-dashboard-ticket-pane>
+        }
+        @case (AdminDashboardPane.Unassigned) {
+          <app-dashboard-ticket-pane
+            title="Unassigned Tickets"
+            [filters]="{ status: TicketStatus.New, unassignedOnly: true }"
+            emptyMessage="No unassigned tickets!">
+          </app-dashboard-ticket-pane>
+        }
+        @case (AdminDashboardPane.ByStatus) {
+          @if (selectedStatus() !== null) {
+            <app-dashboard-ticket-pane
+              [title]="statusLabel(selectedStatus()!)"
+              [filters]="{ status: selectedStatus()! }"
+              emptyMessage="No tickets with this status.">
+            </app-dashboard-ticket-pane>
+          }
+        }
+        @case (AdminDashboardPane.RecentActivity) {
+          <app-dashboard-ticket-pane
+            title="Recent Activity"
+            [filters]="{ }"
+            emptyMessage="No recent activity.">
+          </app-dashboard-ticket-pane>
+        }
+        @case (AdminDashboardPane.UserManagement) {
+          <app-user-management></app-user-management>
+        }
+      }
+    }
+  </main>
+</div>
+

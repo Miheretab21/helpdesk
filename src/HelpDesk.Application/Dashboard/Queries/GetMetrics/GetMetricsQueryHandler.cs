@@ -24,6 +24,8 @@ public sealed class GetMetricsQueryHandler
             priority: null,
             categoryId: null,
             search: null,
+            excludeStatus: null,
+            excludeStatuses: null,
             ct);
 
         // Apply visibility rules based on user role

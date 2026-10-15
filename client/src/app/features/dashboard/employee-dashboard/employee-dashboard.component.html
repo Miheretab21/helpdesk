@@ -1,0 +1,60 @@
+<div class="dashboard-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="dashboard-sidebar">
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Dashboard</h3>
+        <button
+          (click)="setActivePane(EmployeeDashboardPane.MyTickets)"
+          [class.sidebar-nav__item--active]="activePane() === EmployeeDashboardPane.MyTickets"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">My Tickets</span>
+        </button>
+        <button
+          (click)="createTicket()"
+          class="sidebar-nav__item sidebar-nav__item--create">
+          <span class="sidebar-nav__label">+ Create Ticket</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-section__title">Activity</h3>
+        <button
+          (click)="setActivePane(EmployeeDashboardPane.RecentActivity)"
+          [class.sidebar-nav__item--active]="activePane() === EmployeeDashboardPane.RecentActivity"
+          class="sidebar-nav__item">
+          <span class="sidebar-nav__label">Recent Activity</span>
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content Pane -->
+  <main class="dashboard-main">
+    @if (myTickets.isLoading()) {
+      <div class="dashboard__loading">
+        <app-spinner size="large" />
+        <p>Loading dashboard…</p>
+      </div>
+    } @else if (myTickets.error()) {
+      <p class="dashboard__error">Could not load dashboard data.</p>
+    } @else {
+      @switch (activePane()) {
+        @case (EmployeeDashboardPane.MyTickets) {
+          <app-dashboard-ticket-pane
+            title="My Tickets"
+            [filters]="{ }"
+            emptyMessage="No tickets yet. Create one to get started.">
+          </app-dashboard-ticket-pane>
+        }
+        @case (EmployeeDashboardPane.RecentActivity) {
+          <app-dashboard-ticket-pane
+            title="Recent Activity"
+            [filters]="{ }"
+            emptyMessage="No recent activity.">
+          </app-dashboard-ticket-pane>
+        }
+      }
+    }
+  </main>
+</div>
