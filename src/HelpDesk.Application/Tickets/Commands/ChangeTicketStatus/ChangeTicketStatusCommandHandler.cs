@@ -20,17 +20,20 @@ public sealed class ChangeTicketStatusCommandHandler
 
         EnsurePermissionToChangeStatus(command);
 
-        // The domain decides whether the transition is legal.
+        // Admins can act on any ticket; agents only on their assigned ones.
+        // The domain method enforces ownership unless isAdmin is true.
+        var isAdmin = command.RequestingUserRole == UserRole.Admin;
+
         switch (command.TargetStatus)
         {
             case TicketStatus.InProgress:
-                ticket.StartWork(command.RequestingUserId);
+                ticket.StartWork(command.RequestingUserId, isAdmin);
                 break;
             case TicketStatus.Resolved:
-                ticket.Resolve(command.RequestingUserId);
+                ticket.Resolve(command.RequestingUserId, isAdmin);
                 break;
             case TicketStatus.Closed:
-                ticket.Close(command.RequestingUserId);
+                ticket.Close(command.RequestingUserId, isAdmin);
                 break;
             default:
                 throw new DomainException(

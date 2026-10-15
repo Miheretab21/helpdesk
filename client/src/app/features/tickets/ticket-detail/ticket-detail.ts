@@ -63,18 +63,21 @@ export class TicketDetail {
 
   protected readonly canStartWork = computed(() => {
     const t = this.ticket.value();
-    return !!t && this.isAssignedToMe() && t.status === TicketStatus.Assigned;
+    if (!t || t.status !== TicketStatus.Assigned) return false;
+    return this.isAssignedToMe() || this.isAdmin();
   });
 
   protected readonly canResolve = computed(() => {
     const t = this.ticket.value();
-    return !!t && this.isAssignedToMe() && t.status === TicketStatus.InProgress;
-  });
+      if (!t || t.status !== TicketStatus.InProgress) return false;
+      return this.isAssignedToMe() || this.isAdmin();
+    });
 
   protected readonly canClose = computed(() => {
     const t = this.ticket.value();
-    return !!t && this.isAssignedToMe() && t.status === TicketStatus.Resolved;
-  });
+      if (!t || t.status !== TicketStatus.Resolved) return false;
+      return this.isAssignedToMe() || this.isAdmin();
+});
 
   // ---------------------------------------------------------------------
   // Labels

@@ -14,7 +14,6 @@ public class GetTicketByIdQueryHandlerTests
     [Fact]
     public async Task Admin_CanRetrieveAnyTicket()
     {
-        // arrange
         var adminId = Guid.NewGuid();
         var employeeId = Guid.NewGuid();
         var ticket = CreateTicket(employeeId);
@@ -22,11 +21,9 @@ public class GetTicketByIdQueryHandlerTests
         var repo = new FakeTicketRepository(new[] { ticket });
         var handler = new GetTicketByIdQueryHandler(repo);
 
-        // act
         var result = await handler.HandleAsync(
             new GetTicketByIdQuery(ticket.Id, adminId, UserRole.Admin));
 
-        // assert
         Assert.Equal(ticket.Id, result.Id);
         Assert.Equal("Test ticket", result.Title);
         Assert.Equal(TicketStatus.New, result.Status);
@@ -35,7 +32,6 @@ public class GetTicketByIdQueryHandlerTests
     [Fact]
     public async Task Employee_CannotRetrieveTicketTheyDidNotCreate()
     {
-        // arrange
         var employeeId = Guid.NewGuid();
         var anotherEmployeeId = Guid.NewGuid();
         var ticket = CreateTicket(anotherEmployeeId);
@@ -43,24 +39,19 @@ public class GetTicketByIdQueryHandlerTests
         var repo = new FakeTicketRepository(new[] { ticket });
         var handler = new GetTicketByIdQueryHandler(repo);
 
-        // act & assert
-        var ex = await Assert.ThrowsAsync<DomainException>(() =>
+        var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
             handler.HandleAsync(new GetTicketByIdQuery(ticket.Id, employeeId, UserRole.Employee)));
 
-        // The message says "not found" on purpose — we do not reveal that the ticket exists
-        // but is not visible to this user.
         Assert.Contains("not found", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
     public async Task GetById_NonExistentTicket_ShouldThrow()
     {
-        // arrange
         var repo = new FakeTicketRepository();
         var handler = new GetTicketByIdQueryHandler(repo);
 
-        // act & assert
-        var ex = await Assert.ThrowsAsync<DomainException>(() =>
+        var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
             handler.HandleAsync(new GetTicketByIdQuery(
                 Guid.NewGuid(), Guid.NewGuid(), UserRole.Admin)));
 

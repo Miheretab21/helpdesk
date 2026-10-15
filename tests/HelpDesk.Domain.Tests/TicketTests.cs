@@ -143,4 +143,44 @@ public class TicketTests
 
         Assert.Contains("Description", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
+    [Fact]
+public void Admin_CanStartWorkOnTicketAssignedToSomeoneElse()
+{
+    var ticket = CreateValidTicket();
+    var assignedAgent = Guid.NewGuid();
+    var adminId = Guid.NewGuid();
+    ticket.AssignTo(assignedAgent);
+
+    // The admin is NOT the assigned agent, but isAdmin: true overrides.
+    ticket.StartWork(adminId, isAdmin: true);
+
+    Assert.Equal(TicketStatus.InProgress, ticket.Status);
+}
+
+[Fact]
+public void Admin_CanResolveAndCloseRegardlessOfAssignee()
+{
+    var ticket = CreateValidTicket();
+    var assignedAgent = Guid.NewGuid();
+    var adminId = Guid.NewGuid();
+    ticket.AssignTo(assignedAgent);
+
+    ticket.StartWork(adminId, isAdmin: true);
+    ticket.Resolve(adminId, isAdmin: true);
+    ticket.Close(adminId, isAdmin: true);
+
+    Assert.Equal(TicketStatus.Closed, ticket.Status);
+}
+
+[Fact]
+public void NonAdmin_StillCannotActOnSomeoneElsesTicket()
+{
+    var ticket = CreateValidTicket();
+    var assignedAgent = Guid.NewGuid();
+    var otherAgent = Guid.NewGuid();
+    ticket.AssignTo(assignedAgent);
+
+    // Explicitly isAdmin: false — must still throw.
+    Assert.Throws<DomainException>(() => ticket.StartWork(otherAgent, isAdmin: false));
+}
 }

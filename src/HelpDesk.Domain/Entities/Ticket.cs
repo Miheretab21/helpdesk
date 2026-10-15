@@ -51,36 +51,39 @@ public class Ticket : Entity
         Touch();
     }
 
-    public void StartWork(Guid byAgentId)
+    public void StartWork(Guid byUserId, bool isAdmin = false)
     {
-        EnsureAssignedTo(byAgentId);
+        EnsureCanAct(byUserId, isAdmin);
         if (Status != TicketStatus.Assigned)
             throw new DomainException("Only an assigned ticket can be started.");
         Status = TicketStatus.InProgress;
         Touch();
     }
 
-    public void Resolve(Guid byAgentId)
+    public void Resolve(Guid byUserId, bool isAdmin = false)
     {
-        EnsureAssignedTo(byAgentId);
+        EnsureCanAct(byUserId, isAdmin);
         if (Status != TicketStatus.InProgress)
             throw new DomainException("Only an in-progress ticket can be resolved.");
         Status = TicketStatus.Resolved;
         Touch();
     }
 
-    public void Close(Guid byAgentId)
+    public void Close(Guid byUserId, bool isAdmin = false)
     {
-        EnsureAssignedTo(byAgentId);
+        EnsureCanAct(byUserId, isAdmin);
         if (Status != TicketStatus.Resolved)
             throw new DomainException("Only a resolved ticket can be closed.");
         Status = TicketStatus.Closed;
         Touch();
     }
 
-    private void EnsureAssignedTo(Guid agentId)
+    private void EnsureCanAct(Guid userId, bool isAdmin)
     {
-        if (AssignedToId != agentId)
+        // Admins have override authority — they can act on any ticket.
+        if (isAdmin) return;
+
+        if (AssignedToId != userId)
             throw new DomainException("Only the assigned agent can perform this action.");
     }
 
