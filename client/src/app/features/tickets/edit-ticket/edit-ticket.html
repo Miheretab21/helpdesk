@@ -1,0 +1,44 @@
+<div class="edit-ticket">
+  <header class="edit-ticket__header">
+    <h1>Edit Ticket</h1>
+    <a [routerLink]="['/tickets', id()]" class="edit-ticket__back">← Back to ticket</a>
+  </header>
+
+  @if (ticket.isLoading()) {
+    <p>Loading…</p>
+  } @else if (ticket.error()) {
+    <p class="edit-ticket__error">Could not load ticket.</p>
+  } @else {
+    <form class="edit-ticket__form" (ngSubmit)="submit()">
+      <label>
+        Title
+        <input type="text" [(ngModel)]="title" name="title" maxlength="200" required />
+      </label>
+
+      <label>
+        Description
+        <textarea [(ngModel)]="description" name="description" rows="6" maxlength="4000" required></textarea>
+      </label>
+
+      <label>
+        Category
+        <select [(ngModel)]="categoryId" name="categoryId" required>
+          @for (category of categories.value(); track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </label>
+
+      @if (error()) {
+        <p class="edit-ticket__error">{{ error() }}</p>
+      }
+
+      <div class="edit-ticket__actions">
+        <a [routerLink]="['/tickets', id()]" class="btn">Cancel</a>
+        <button type="submit" class="btn btn--primary" [disabled]="submitting()">
+          {{ submitting() ? 'Saving…' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

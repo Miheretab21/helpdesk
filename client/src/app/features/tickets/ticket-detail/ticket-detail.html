@@ -1,4 +1,5 @@
 <div class="ticket-detail">
+  <a routerLink="/" class="ticket-detail__back">← All tickets</a>
   @if (ticket.isLoading()) {
     <p class="ticket-detail__state">Loading…</p>
   } @else if (ticket.error()) {
@@ -43,6 +44,9 @@
           [disabled]="actionBusy()" (click)="cancel()">
     Cancel ticket
   </button>
+}
+@if (isAdmin()) {
+  <a [routerLink]="['/tickets', id(), 'edit']" class="btn">Edit ticket</a>
 }
       @if (actionError()) {
         <p class="ticket-detail__state ticket-detail__state--error">{{ actionError() }}</p>

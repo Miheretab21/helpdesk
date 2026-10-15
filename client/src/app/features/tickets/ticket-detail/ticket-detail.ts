@@ -9,10 +9,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { TicketDetail as TicketDetailDto, TicketPriority, TicketStatus } from '../../../core/models/ticket.model';
 import { UserRole } from '../../../core/models/user.model';
 import { Comment } from '../../../core/models/comment.model';
+import { RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-ticket-detail',
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, RouterLink],
   templateUrl: './ticket-detail.html',
   styleUrl: './ticket-detail.scss',
 })

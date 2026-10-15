@@ -9,6 +9,7 @@ using HelpDesk.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using HelpDesk.Application.Tickets.Commands.CancelTicket;
+using HelpDesk.Application.Tickets.Commands.EditTicket;
 
 namespace HelpDesk.WebAPI.Controllers;
 
@@ -24,7 +25,7 @@ public sealed class TicketsController : ControllerBase
     private readonly AssignTicketCommandHandler _assignTicket;
     private readonly ChangeTicketStatusCommandHandler _changeStatus;
     private readonly CancelTicketCommandHandler _cancelTicket;
-
+    private readonly EditTicketCommandHandler _editTicket;
     public TicketsController(
         ICurrentUserService currentUser,
         GetTicketsQueryHandler getTickets,
@@ -32,7 +33,8 @@ public sealed class TicketsController : ControllerBase
         CreateTicketCommandHandler createTicket,
         AssignTicketCommandHandler assignTicket,
         ChangeTicketStatusCommandHandler changeStatus,
-        CancelTicketCommandHandler cancelTicket)
+        CancelTicketCommandHandler cancelTicket,
+        EditTicketCommandHandler editTicket)
     {
         _currentUser = currentUser;
         _getTickets = getTickets;
@@ -41,6 +43,7 @@ public sealed class TicketsController : ControllerBase
         _assignTicket = assignTicket;
         _changeStatus = changeStatus;
         _cancelTicket = cancelTicket;
+        _editTicket = editTicket;
     }
 
     // -----------------------------------------------------------------------
@@ -57,6 +60,10 @@ public sealed class TicketsController : ControllerBase
     public sealed record AssignTicketRequest(Guid AssignToUserId);
 
     public sealed record ChangeStatusRequest(TicketStatus TargetStatus);
+    public sealed record EditTicketRequest(
+    string Title,
+    string Description,
+    Guid CategoryId);
 
     // -----------------------------------------------------------------------
     // Endpoints
@@ -128,6 +135,23 @@ public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
         RequestingUserId: _currentUser.UserId);
 
     await _cancelTicket.HandleAsync(command, ct);
+    return NoContent();
+}
+[HttpPut("{id:guid}")]
+public async Task<IActionResult> Edit(
+    Guid id,
+    [FromBody] EditTicketRequest request,
+    CancellationToken ct)
+{
+    var command = new EditTicketCommand(
+        TicketId: id,
+        Title: request.Title,
+        Description: request.Description,
+        CategoryId: request.CategoryId,
+        RequestingUserId: _currentUser.UserId,
+        RequestingUserRole: _currentUser.Role);
+
+    await _editTicket.HandleAsync(command, ct);
     return NoContent();
 }
 

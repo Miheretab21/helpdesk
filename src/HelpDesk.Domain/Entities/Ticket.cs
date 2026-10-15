@@ -22,14 +22,8 @@ public class Ticket : Entity
 
     public Ticket(string title, string description, TicketPriority priority, Guid categoryId, Guid createdById)
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new DomainException("Title is required.");
-        if (title.Length > 200)
-            throw new DomainException("Title cannot exceed 200 characters.");
-        if (string.IsNullOrWhiteSpace(description))
-            throw new DomainException("Description is required.");
-        if (description.Length > 4000)
-            throw new DomainException("Description cannot exceed 4000 characters.");
+        ValidateTitle(title);
+        ValidateDescription(description);
 
         Title = title.Trim();
         Description = description.Trim();
@@ -37,6 +31,19 @@ public class Ticket : Entity
         CategoryId = categoryId;
         CreatedById = createdById;
         Status = TicketStatus.New;
+    }
+
+    public void Edit(string title, string description, Guid categoryId)
+    {
+        ValidateTitle(title);
+        ValidateDescription(description);
+        if (categoryId == Guid.Empty)
+            throw new DomainException("Category is required.");
+
+        Title = title.Trim();
+        Description = description.Trim();
+        CategoryId = categoryId;
+        Touch();
     }
 
     public void AssignTo(Guid agentId)
@@ -50,6 +57,7 @@ public class Ticket : Entity
         Status = TicketStatus.Assigned;
         Touch();
     }
+
     public void Cancel(Guid byUserId)
     {
         if (CreatedById != byUserId)
@@ -88,6 +96,10 @@ public class Ticket : Entity
         Touch();
     }
 
+    // ---------------------------------------------------------------------
+    // Private helpers
+    // ---------------------------------------------------------------------
+
     private void EnsureCanAct(Guid userId, bool isAdmin)
     {
         // Admins have override authority — they can act on any ticket.
@@ -95,6 +107,22 @@ public class Ticket : Entity
 
         if (AssignedToId != userId)
             throw new DomainException("Only the assigned agent can perform this action.");
+    }
+
+    private static void ValidateTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException("Title is required.");
+        if (title.Length > 200)
+            throw new DomainException("Title cannot exceed 200 characters.");
+    }
+
+    private static void ValidateDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new DomainException("Description is required.");
+        if (description.Length > 4000)
+            throw new DomainException("Description cannot exceed 4000 characters.");
     }
 
     private void Touch() => UpdatedAt = DateTime.UtcNow;

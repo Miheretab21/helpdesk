@@ -215,4 +215,38 @@ public void CannotCancelTicketThatIsAlreadyAssigned()
     var ex = Assert.Throws<DomainException>(() => ticket.Cancel(creatorId));
     Assert.Contains("new ticket", ex.Message, StringComparison.OrdinalIgnoreCase);
 }
+[Fact]
+public void Edit_UpdatesTitleDescriptionAndCategory()
+{
+    var ticket = CreateValidTicket();
+    var newCategoryId = Guid.NewGuid();
+
+    ticket.Edit("Updated title", "Updated description", newCategoryId);
+
+    Assert.Equal("Updated title", ticket.Title);
+    Assert.Equal("Updated description", ticket.Description);
+    Assert.Equal(newCategoryId, ticket.CategoryId);
+}
+
+[Fact]
+public void Edit_WithInvalidTitle_Throws()
+{
+    var ticket = CreateValidTicket();
+
+    Assert.Throws<DomainException>(() =>
+        ticket.Edit("", "desc", Guid.NewGuid()));
+}
+
+[Fact]
+public void Edit_UpdatesTimestamp()
+{
+    var ticket = CreateValidTicket();
+    var originalUpdatedAt = ticket.UpdatedAt;
+
+    // Small delay so the timestamps differ.
+    Thread.Sleep(10);
+    ticket.Edit("New title", "New description", Guid.NewGuid());
+
+    Assert.True(ticket.UpdatedAt > originalUpdatedAt);
+}
 }

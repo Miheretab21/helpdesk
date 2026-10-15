@@ -8,6 +8,11 @@ export interface CreateTicketRequest {
   priority: TicketPriority;
   categoryId: string;
 }
+export interface EditTicketRequest {
+  title: string;
+  description: string;
+  categoryId: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
@@ -29,6 +34,9 @@ export class TicketService {
   }
   cancel(ticketId: string) {
     return this.api.post<void>(`/api/tickets/${ticketId}/cancel`, {});
+  }
+  edit(ticketId: string, request: EditTicketRequest) {
+    return this.api.put<void>(`/api/tickets/${ticketId}`, request);
   }
   changeStatus(ticketId: string, targetStatus: TicketStatus) {
     return this.api.post<void>(`/api/tickets/${ticketId}/status`, { targetStatus });
