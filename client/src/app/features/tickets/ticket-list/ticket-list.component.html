@@ -1,7 +1,9 @@
 <div class="ticket-list">
   <header class="ticket-list__header">
     <h1>Tickets</h1>
+    @if (canCreateTicket()) {
     <a routerLink="/tickets/new" class="btn btn--primary">New Ticket</a>
+  }
   </header>
 
   @if (tickets.isLoading()) {

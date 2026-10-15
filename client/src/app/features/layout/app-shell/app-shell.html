@@ -5,6 +5,7 @@
     <div class="shell__user">
       @if (auth.user(); as user) {
         <span class="shell__name">{{ user.fullName }}</span>
+        <span class="shell__role">{{ UserRole[user.role] }}</span>
         <button type="button" class="shell__logout" (click)="auth.logout()">Sign out</button>
       }
     </div>

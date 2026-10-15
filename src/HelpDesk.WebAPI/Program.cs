@@ -87,11 +87,6 @@ builder.Services.AddScoped<ICurrentUserService, JwtCurrentUserService>();
 // ---------------------------------------------------------------------------
 // ASP.NET Core plumbing
 // ---------------------------------------------------------------------------
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-    });
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();

@@ -2,9 +2,7 @@
   @if (ticket.isLoading()) {
     <p class="ticket-detail__state">Loading…</p>
   } @else if (ticket.error()) {
-    <p class="ticket-detail__state ticket-detail__state--error">
-      Could not load ticket.
-    </p>
+    <p class="ticket-detail__state ticket-detail__state--error">Could not load ticket.</p>
   } @else if (ticket.value(); as t) {
     <header class="ticket-detail__header">
       <h1>{{ t.title }}</h1>
@@ -13,6 +11,37 @@
         <span class="badge badge--priority">{{ priorityLabel(t.priority) }}</span>
       </div>
     </header>
+
+    <!-- Action bar: role-based buttons -->
+    <div class="ticket-detail__actions">
+      @if (canClaim()) {
+        <button type="button" class="btn btn--primary"
+                [disabled]="actionBusy()" (click)="claim()">
+          Claim ticket
+        </button>
+      }
+      @if (canStartWork()) {
+        <button type="button" class="btn btn--primary"
+                [disabled]="actionBusy()" (click)="startWork()">
+          Start work
+        </button>
+      }
+      @if (canResolve()) {
+        <button type="button" class="btn btn--primary"
+                [disabled]="actionBusy()" (click)="resolve()">
+          Resolve
+        </button>
+      }
+      @if (canClose()) {
+        <button type="button" class="btn btn--primary"
+                [disabled]="actionBusy()" (click)="close()">
+          Close
+        </button>
+      }
+      @if (actionError()) {
+        <p class="ticket-detail__state ticket-detail__state--error">{{ actionError() }}</p>
+      }
+    </div>
 
     <section class="ticket-detail__section">
       <h2>Description</h2>
@@ -51,9 +80,7 @@
           [disabled]="submitting()"></textarea>
 
         @if (submitError()) {
-          <p class="ticket-detail__state ticket-detail__state--error">
-            {{ submitError() }}
-          </p>
+          <p class="ticket-detail__state ticket-detail__state--error">{{ submitError() }}</p>
         }
 
         <button
