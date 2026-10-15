@@ -14,12 +14,29 @@ export interface EditTicketRequest {
   categoryId: string;
 }
 
+export interface TicketFilters {
+  status?: TicketStatus;
+  priority?: TicketPriority;
+  categoryId?: string;
+  search?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TicketService {
   private readonly api = inject(ApiService);
 
-  list() {
-    return this.api.get<TicketListItem[]>('/api/tickets');
+  list(filters?: TicketFilters) {
+    let url = '/api/tickets';
+    if (filters) {
+      const params = new URLSearchParams();
+      if (filters.status !== undefined) params.append('status', filters.status.toString());
+      if (filters.priority !== undefined) params.append('priority', filters.priority.toString());
+      if (filters.categoryId) params.append('categoryId', filters.categoryId);
+      if (filters.search) params.append('search', filters.search);
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
+    }
+    return this.api.get<TicketListItem[]>(url);
   }
 
   getById(id: string) {

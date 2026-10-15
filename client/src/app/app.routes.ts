@@ -16,6 +16,12 @@ export const routes: Routes = [
       {
     path: '',
     loadComponent: () =>
+      import('./features/dashboard/dashboard.component')
+        .then(m => m.DashboardComponent),
+      },
+      {
+    path: 'tickets',
+    loadComponent: () =>
       import('./features/tickets/ticket-list/ticket-list.component')
         .then(m => m.TicketListComponent),
       },
@@ -37,5 +43,9 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: '' },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./features/errors/not-found/not-found.component').then(m => m.NotFoundComponent),
+  },
 ];

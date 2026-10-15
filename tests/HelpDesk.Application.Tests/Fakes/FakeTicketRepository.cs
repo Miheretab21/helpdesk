@@ -17,13 +17,21 @@ internal sealed class FakeTicketRepository : ITicketRepository
         Task.FromResult(_tickets.FirstOrDefault(t => t.Id == id));
 
     public Task<IReadOnlyList<Ticket>> ListAsync(
-        TicketStatus? status,
-        Guid? categoryId,
+        TicketStatus? status = null,
+        TicketPriority? priority = null,
+        Guid? categoryId = null,
+        string? search = null,
         CancellationToken ct = default)
     {
         IEnumerable<Ticket> q = _tickets;
         if (status is not null) q = q.Where(t => t.Status == status);
+        if (priority is not null) q = q.Where(t => t.Priority == priority);
         if (categoryId is not null) q = q.Where(t => t.CategoryId == categoryId);
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchTerm = search.Trim().ToLowerInvariant();
+            q = q.Where(t => t.Title.ToLower().Contains(searchTerm) || t.Description.ToLower().Contains(searchTerm));
+        }
         return Task.FromResult<IReadOnlyList<Ticket>>(q.ToList());
     }
 

@@ -71,14 +71,18 @@ public sealed class TicketsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<TicketListItemDto>>> List(
         [FromQuery] TicketStatus? status,
+        [FromQuery] TicketPriority? priority,
         [FromQuery] Guid? categoryId,
+        [FromQuery] string? search,
         CancellationToken ct)
     {
         var query = new GetTicketsQuery(
             RequestingUserId: _currentUser.UserId,
             RequestingUserRole: _currentUser.Role,
             StatusFilter: status,
-            CategoryFilter: categoryId);
+            PriorityFilter: priority,
+            CategoryFilter: categoryId,
+            SearchFilter: search);
 
         var result = await _getTickets.HandleAsync(query, ct);
         return Ok(result);

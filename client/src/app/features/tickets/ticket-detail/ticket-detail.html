@@ -1,7 +1,10 @@
 <div class="ticket-detail">
   <a routerLink="/" class="ticket-detail__back">← All tickets</a>
   @if (ticket.isLoading()) {
-    <p class="ticket-detail__state">Loading…</p>
+    <div class="ticket-detail__state">
+      <app-spinner size="large" />
+      <p>Loading…</p>
+    </div>
   } @else if (ticket.error()) {
     <p class="ticket-detail__state ticket-detail__state--error">Could not load ticket.</p>
   } @else if (ticket.value(); as t) {
@@ -45,11 +48,25 @@
     Cancel ticket
   </button>
 }
-@if (isAdmin()) {
-  <a [routerLink]="['/tickets', id(), 'edit']" class="btn">Edit ticket</a>
-}
-      @if (actionError()) {
-        <p class="ticket-detail__state ticket-detail__state--error">{{ actionError() }}</p>
+      @if (isAdmin()) {
+        <div class="ticket-detail__assign">
+          @if (users.isLoading()) {
+            <span class="assign-loading">Loading agents…</span>
+          } @else if (availableAgents().length > 0) {
+            <select [(ngModel)]="selectedAssigneeId" class="ticket-detail__select">
+              <option [value]="null">Assign to agent…</option>
+              @for (agent of availableAgents(); track agent.id) {
+                <option [value]="agent.id">{{ agent.fullName }}</option>
+              }
+            </select>
+            <button type="button" class="btn btn--secondary"
+                    [disabled]="!selectedAssigneeId() || actionBusy()"
+                    (click)="assignToUser()">
+              Assign
+            </button>
+          }
+        </div>
+        <a [routerLink]="['/tickets', id(), 'edit']" class="btn">Edit ticket</a>
       }
     </div>
 

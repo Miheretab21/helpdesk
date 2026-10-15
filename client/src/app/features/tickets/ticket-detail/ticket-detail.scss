@@ -45,9 +45,32 @@
     margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
 
     &:empty {
       display: none;
+    }
+  }
+
+  &__assign {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  &__select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+
+    &:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.6;
     }
   }
 

@@ -18,7 +18,12 @@ public sealed class GetTicketsQueryHandler
         GetTicketsQuery query,
         CancellationToken ct = default)
     {
-        var tickets = await _tickets.ListAsync(query.StatusFilter, query.CategoryFilter, ct);
+        var tickets = await _tickets.ListAsync(
+            query.StatusFilter,
+            query.PriorityFilter,
+            query.CategoryFilter,
+            query.SearchFilter,
+            ct);
 
         var visible = ApplyVisibilityRule(tickets, query.RequestingUserId, query.RequestingUserRole);
 

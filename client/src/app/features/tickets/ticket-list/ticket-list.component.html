@@ -6,14 +6,72 @@
   }
   </header>
 
+  <!-- Filters Section -->
+  <section class="ticket-list__filters">
+    <div class="ticket-list__search">
+      <input
+        type="text"
+        placeholder="Search by title…"
+        [value]="searchFilter()"
+        (input)="onSearchInput($event)"
+        class="ticket-list__search-input" />
+    </div>
+
+    <div class="ticket-list__filter-row">
+      <select [(ngModel)]="statusFilter" class="ticket-list__filter-select">
+        <option [value]="null">All Statuses</option>
+        <option [value]="TicketStatus.New">New</option>
+        <option [value]="TicketStatus.Assigned">Assigned</option>
+        <option [value]="TicketStatus.InProgress">In Progress</option>
+        <option [value]="TicketStatus.Resolved">Resolved</option>
+        <option [value]="TicketStatus.Closed">Closed</option>
+        <option [value]="TicketStatus.Cancelled">Cancelled</option>
+      </select>
+
+      <select [(ngModel)]="priorityFilter" class="ticket-list__filter-select">
+        <option [value]="null">All Priorities</option>
+        <option [value]="TicketPriority.Low">Low</option>
+        <option [value]="TicketPriority.Medium">Medium</option>
+        <option [value]="TicketPriority.High">High</option>
+        <option [value]="TicketPriority.Urgent">Urgent</option>
+      </select>
+
+      <select [(ngModel)]="categoryFilter" class="ticket-list__filter-select">
+        <option [value]="null">All Categories</option>
+        @for (cat of categories.value(); track cat.id) {
+          <option [value]="cat.id">{{ cat.name }}</option>
+        }
+      </select>
+
+      @if (hasActiveFilters()) {
+        <button type="button" class="btn btn--secondary" (click)="resetFilters()">
+          Clear Filters
+        </button>
+      }
+    </div>
+  </section>
+
   @if (tickets.isLoading()) {
-    <p class="ticket-list__state">Loading tickets…</p>
+    <div class="ticket-list__state">
+      <app-spinner size="large" />
+      <p>Loading tickets…</p>
+    </div>
   } @else if (tickets.error()) {
     <p class="ticket-list__state ticket-list__state--error">
       Could not load tickets.
     </p>
   } @else if (tickets.value().length === 0) {
-    <p class="ticket-list__state">No tickets yet.</p>
+    <app-empty-state
+      icon="📋"
+      title="No tickets found"
+      message="@if (hasActiveFilters()) { No tickets match your filters. Try adjusting them. } @else { Create a new ticket to get started. }">
+      @if (canCreateTicket() && !hasActiveFilters()) {
+        <a routerLink="/tickets/new" class="btn btn--primary">New Ticket</a>
+      }
+      @if (hasActiveFilters()) {
+        <button type="button" class="btn btn--secondary" (click)="resetFilters()">Clear Filters</button>
+      }
+    </app-empty-state>
   } @else {
     <table class="ticket-list__table">
       <thead>

@@ -4,11 +4,14 @@ using HelpDesk.Application.Auth.Commands.Login;
 using HelpDesk.Application.Categories.Queries.GetCategories;
 using HelpDesk.Application.Comments.Commands.AddComment;
 using HelpDesk.Application.Comments.Queries.GetComments;
+using HelpDesk.Application.Dashboard.Queries.GetMetrics;
 using HelpDesk.Application.Tickets.Commands.AssignTicket;
 using HelpDesk.Application.Tickets.Commands.ChangeTicketStatus;
 using HelpDesk.Application.Tickets.Commands.CreateTicket;
 using HelpDesk.Application.Tickets.Queries.GetTicketById;
 using HelpDesk.Application.Tickets.Queries.GetTickets;
+using HelpDesk.Application.Users.Queries.GetUsers;
+using HelpDesk.Application.Users.Queries.GetUserById;
 using HelpDesk.Infrastructure.Persistence;
 using HelpDesk.Infrastructure.Persistence.Repositories;
 using HelpDesk.Infrastructure.Security;
@@ -83,6 +86,9 @@ builder.Services.AddScoped<AddCommentCommandHandler>();
 builder.Services.AddScoped<LoginCommandHandler>();
 builder.Services.AddScoped<CancelTicketCommandHandler>();
 builder.Services.AddScoped<EditTicketCommandHandler>();
+builder.Services.AddScoped<GetMetricsQueryHandler>();
+builder.Services.AddScoped<GetUsersQueryHandler>();
+builder.Services.AddScoped<GetUserByIdQueryHandler>();
 
 // ---------------------------------------------------------------------------
 // Current user + HTTP context

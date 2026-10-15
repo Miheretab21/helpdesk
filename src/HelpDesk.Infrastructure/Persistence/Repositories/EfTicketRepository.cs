@@ -18,8 +18,10 @@ public sealed class EfTicketRepository : ITicketRepository
         _db.Tickets.FirstOrDefaultAsync(t => t.Id == id, ct);
 
     public async Task<IReadOnlyList<Ticket>> ListAsync(
-        TicketStatus? status,
-        Guid? categoryId,
+        TicketStatus? status = null,
+        TicketPriority? priority = null,
+        Guid? categoryId = null,
+        string? search = null,
         CancellationToken ct = default)
     {
         IQueryable<Ticket> query = _db.Tickets.AsNoTracking();
@@ -27,8 +29,19 @@ public sealed class EfTicketRepository : ITicketRepository
         if (status is not null)
             query = query.Where(t => t.Status == status);
 
+        if (priority is not null)
+            query = query.Where(t => t.Priority == priority);
+
         if (categoryId is not null)
             query = query.Where(t => t.CategoryId == categoryId);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchTerm = search.Trim().ToLowerInvariant();
+            query = query.Where(t => 
+                t.Title.ToLower().Contains(searchTerm) || 
+                t.Description.ToLower().Contains(searchTerm));
+        }
 
         return await query.ToListAsync(ct);
     }

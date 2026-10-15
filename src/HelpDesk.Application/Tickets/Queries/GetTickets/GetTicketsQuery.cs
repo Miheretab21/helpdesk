@@ -6,4 +6,6 @@ public sealed record GetTicketsQuery(
     Guid RequestingUserId,
     UserRole RequestingUserRole,
     TicketStatus? StatusFilter = null,
-    Guid? CategoryFilter = null);
+    TicketPriority? PriorityFilter = null,
+    Guid? CategoryFilter = null,
+    string? SearchFilter = null);

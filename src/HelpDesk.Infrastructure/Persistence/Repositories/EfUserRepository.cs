@@ -21,4 +21,12 @@ public sealed class EfUserRepository : IUserRepository
 
     public Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
         _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
+
+    public async Task<IReadOnlyList<User>> ListAsync(CancellationToken ct = default)
+    {
+        return await _db.Users
+            .AsNoTracking()
+            .OrderBy(u => u.FullName)
+            .ToListAsync(ct);
+    }
 }

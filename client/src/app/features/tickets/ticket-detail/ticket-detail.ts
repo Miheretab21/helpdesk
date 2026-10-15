@@ -5,22 +5,27 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { TicketService } from '../../../core/services/ticket.service';
 import { CommentService } from '../../../core/services/comment.service';
+import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { TicketDetail as TicketDetailDto, TicketPriority, TicketStatus } from '../../../core/models/ticket.model';
-import { UserRole } from '../../../core/models/user.model';
+import { UserRole, User } from '../../../core/models/user.model';
 import { Comment } from '../../../core/models/comment.model';
 import { RouterLink} from '@angular/router';
+import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-ticket-detail',
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [DatePipe, FormsModule, RouterLink, SpinnerComponent],
   templateUrl: './ticket-detail.html',
   styleUrl: './ticket-detail.scss',
 })
 export class TicketDetail {
   private readonly commentService = inject(CommentService);
   private readonly ticketService = inject(TicketService);
+  private readonly userService = inject(UserService);
   protected readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
 
   readonly id = input.required<string>();
 
@@ -33,11 +38,16 @@ export class TicketDetail {
     { defaultValue: [] },
   );
 
+  protected readonly users = httpResource<User[]>(
+    () => '/api/users',
+    { defaultValue: [] },
+  );
+
   protected readonly newComment = signal('');
   protected readonly submitting = signal(false);
   protected readonly submitError = signal<string | null>(null);
-  protected readonly actionError = signal<string | null>(null);
   protected readonly actionBusy = signal(false);
+  protected readonly selectedAssigneeId = signal<string | null>(null);
 
   protected readonly TicketStatus = TicketStatus;
   protected readonly UserRole = UserRole;
@@ -51,6 +61,10 @@ export class TicketDetail {
   protected readonly isEmployee = computed(() => this.auth.isInRole(UserRole.Employee));
 
   protected readonly currentUserId = computed(() => this.auth.user()?.id ?? '');
+
+  protected readonly availableAgents = computed(() => {
+    return this.users.value().filter(u => u.role === UserRole.Agent);
+  });
 
   protected readonly canClaim = computed(() => {
   const t = this.ticket.value();
@@ -102,6 +116,18 @@ export class TicketDetail {
   }
 
   // ---------------------------------------------------------------------
+  // Admin assign functionality
+  // ---------------------------------------------------------------------
+
+  protected async assignToUser(): Promise<void> {
+    const userId = this.selectedAssigneeId();
+    if (!userId) return;
+
+    await this.runAction(() => this.ticketService.assign(this.id(), userId), `Assigned to agent`);
+    this.selectedAssigneeId.set(null);
+  }
+
+  // ---------------------------------------------------------------------
   // Comment submission (existing)
   // ---------------------------------------------------------------------
 
@@ -116,7 +142,9 @@ export class TicketDetail {
       await firstValueFrom(this.commentService.add(this.id(), body));
       this.newComment.set('');
       this.comments.reload();
+      this.toast.success('Comment posted');
     } catch {
+      this.toast.error('Could not add comment.');
       this.submitError.set('Could not add comment.');
     } finally {
       this.submitting.set(false);
@@ -130,38 +158,38 @@ export class TicketDetail {
   protected async claim(): Promise<void> {
     const userId = this.currentUserId();
     if (!userId) return;
-    await this.runAction(() => this.ticketService.assign(this.id(), userId));
+    await this.runAction(() => this.ticketService.assign(this.id(), userId), 'Ticket claimed');
   }
 
   protected async startWork(): Promise<void> {
-    await this.runAction(() => this.ticketService.changeStatus(this.id(), TicketStatus.InProgress));
+    await this.runAction(() => this.ticketService.changeStatus(this.id(), TicketStatus.InProgress), 'Work started');
   }
 
   protected async resolve(): Promise<void> {
-    await this.runAction(() => this.ticketService.changeStatus(this.id(), TicketStatus.Resolved));
+    await this.runAction(() => this.ticketService.changeStatus(this.id(), TicketStatus.Resolved), 'Ticket resolved');
   }
 
   protected async close(): Promise<void> {
-    await this.runAction(() => this.ticketService.changeStatus(this.id(), TicketStatus.Closed));
+    await this.runAction(() => this.ticketService.changeStatus(this.id(), TicketStatus.Closed), 'Ticket closed');
   }
 
-  private async runAction(action: () => ReturnType<typeof this.ticketService.assign>): Promise<void> {
+  private async runAction(action: () => ReturnType<typeof this.ticketService.assign>, successMessage: string): Promise<void> {
     if (this.actionBusy()) return;
 
     this.actionBusy.set(true);
-    this.actionError.set(null);
 
     try {
       await firstValueFrom(action());
       this.ticket.reload();
+      this.toast.success(successMessage);
     } catch {
-      this.actionError.set('Action failed. Please try again.');
+      this.toast.error('Action failed. Please try again.');
     } finally {
       this.actionBusy.set(false);
     }
   }
   protected async cancel(): Promise<void> {
   if (!confirm('Cancel this ticket? This cannot be undone.')) return;
-  await this.runAction(() => this.ticketService.cancel(this.id()));
+  await this.runAction(() => this.ticketService.cancel(this.id()), 'Ticket cancelled');
 }
 }
