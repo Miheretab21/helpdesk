@@ -4,6 +4,7 @@ using HelpDesk.Application.Comments.Dtos;
 using HelpDesk.Application.Comments.Queries.GetComments;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using HelpDesk.Domain.Entities;
 
 namespace HelpDesk.WebAPI.Controllers;
 
@@ -15,15 +16,18 @@ public sealed class CommentsController : ControllerBase
     private readonly ICurrentUserService _currentUser;
     private readonly GetCommentsQueryHandler _getComments;
     private readonly AddCommentCommandHandler _addComment;
+    private readonly ITicketAuditRepository _audit;
 
     public CommentsController(
         ICurrentUserService currentUser,
         GetCommentsQueryHandler getComments,
-        AddCommentCommandHandler addComment)
+        AddCommentCommandHandler addComment,
+        ITicketAuditRepository audit)
     {
         _currentUser = currentUser;
         _getComments = getComments;
         _addComment = addComment;
+        _audit = audit;
     }
 
     [HttpGet]
@@ -44,6 +48,7 @@ public sealed class CommentsController : ControllerBase
     {
         var id = await _addComment.HandleAsync(new AddCommentCommand(
             ticketId, request.Body, _currentUser.UserId, _currentUser.Role), ct);
+        await _audit.AddAsync(new TicketAuditEntry(ticketId, _currentUser.UserId, "Comment added", "A comment was added"), ct);
 
         return CreatedAtAction(nameof(List), new { ticketId }, id);
     }

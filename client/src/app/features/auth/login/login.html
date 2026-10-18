@@ -1,24 +1,82 @@
 <div class="login">
-  <form class="login__form" (ngSubmit)="submit()">
-    <h1>Sign in</h1>
-    <p class="login__hint">Try: alice@example.com / bob@example.com / carol@example.com — password: password123</p>
+  <div class="login__ambient"></div>
+  <section class="login__intro">
+    <a class="login__brand"><span>✦</span> HelpDesk</a>
+    <p class="login__eyebrow">SERVICE OPERATIONS</p>
+    <h1>Work gets easier<br />when the signal is clear.</h1>
+    <p class="login__intro-copy">One calm workspace for every request, assignment, and resolution.</p>
+  </section>
 
-    <label>
-      Email
-      <input type="email" [(ngModel)]="email" name="email" autocomplete="username" required />
+  <form class="login__form" (ngSubmit)="submit()" novalidate>
+    <p class="login__eyebrow">WELCOME BACK</p>
+    <h2>Sign in to your workspace</h2>
+    <p class="login__hint">Demo accounts use the password <strong>password123</strong>.</p>
+
+    <div class="login__demo" role="group" aria-label="Demo account shortcuts">
+      <span class="login__demo-label">Quick demo:</span>
+      @for (account of demoAccounts; track account.email) {
+        <button
+          type="button"
+          class="login__demo-chip"
+          [disabled]="submitting()"
+          [attr.aria-label]="'Sign in as ' + account.name + ' (' + account.role + ')'"
+          (click)="useDemoAccount(account)">
+          Sign in as {{ account.name }} <span class="login__demo-role">{{ account.role }}</span>
+        </button>
+      }
+    </div>
+
+    <label class="login__field" [class.login__field--invalid]="!!emailError()">
+      <span class="login__field-label">Email</span>
+      <input
+        type="email"
+        [(ngModel)]="email"
+        name="email"
+        autocomplete="username"
+        required
+        placeholder="you@example.com"
+        [class.is-invalid]="!!emailError()"
+        [class.is-valid]="!!email() && !emailInvalid()"
+        [attr.aria-invalid]="emailError() ? 'true' : null"
+        [attr.aria-describedby]="emailError() ? 'login-email-error' : null"
+        (blur)="markTouched('email')" />
+      @if (emailError()) {
+        <span class="login__field-error" id="login-email-error" role="alert">{{ emailError() }}</span>
+      }
     </label>
 
-    <label>
-      Password
-      <input type="password" [(ngModel)]="password" name="password" autocomplete="current-password" required />
+    <label class="login__field" [class.login__field--invalid]="!!passwordError()">
+      <span class="login__field-label">Password</span>
+      <input
+        type="password"
+        [(ngModel)]="password"
+        name="password"
+        autocomplete="current-password"
+        required
+        placeholder="••••••••"
+        [class.is-invalid]="!!passwordError()"
+        [class.is-valid]="!!password() && !passwordInvalid()"
+        [attr.aria-invalid]="passwordError() ? 'true' : null"
+        [attr.aria-describedby]="passwordError() ? 'login-password-error' : null"
+        (blur)="markTouched('password')" />
+      @if (passwordError()) {
+        <span class="login__field-error" id="login-password-error" role="alert">{{ passwordError() }}</span>
+      }
     </label>
 
     @if (error()) {
-      <p class="login__error">{{ error() }}</p>
+      <p class="login__error" role="alert">{{ error() }}</p>
     }
 
-    <button type="submit" class="btn btn--primary" [disabled]="submitting()">
-      {{ submitting() ? 'Signing in…' : 'Sign in' }}
+    <button
+      type="submit"
+      class="btn btn--primary login__submit"
+      [disabled]="!canSubmit()"
+      [attr.aria-busy]="submitting()">
+      @if (submitting()) {
+        <span class="login__spinner" aria-hidden="true"></span>
+      }
+      <span>{{ submitting() ? 'Signing in…' : 'Continue to workspace →' }}</span>
     </button>
   </form>
 </div>

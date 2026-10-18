@@ -9,6 +9,7 @@ public sealed record DashboardMetricsDto(
 
 public sealed record EmployeeDashboardDto(
     Dictionary<int, int> MyTicketsByStatus,
+    int ResolvedToday,
     IReadOnlyList<TicketListItemDto> MyRecentActivity);
 
 public sealed record AgentDashboardDto(

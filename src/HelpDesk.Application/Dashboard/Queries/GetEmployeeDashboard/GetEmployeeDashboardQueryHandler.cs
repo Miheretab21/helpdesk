@@ -38,6 +38,11 @@ public sealed class GetEmployeeDashboardQueryHandler
             statusCounts[(int)status] = myTickets.Count(t => t.Status == status);
         }
 
+        // Tickets that reached Resolved during the current day.
+        var today = DateTime.UtcNow.Date;
+        var resolvedToday = myTickets.Count(t =>
+            t.Status == TicketStatus.Resolved && t.UpdatedAt.Date == today);
+
         // Get recent activity (last 5 of their tickets updated)
         var recentActivity = myTickets
             .OrderByDescending(t => t.UpdatedAt)
@@ -50,9 +55,11 @@ public sealed class GetEmployeeDashboardQueryHandler
                 t.AssignedToId,
                 t.CreatedById,
                 t.CreatedAt,
-                t.UpdatedAt))
+                t.UpdatedAt,
+                t.SlaDueAt,
+                t.EscalatedAt))
             .ToList();
 
-        return new EmployeeDashboardDto(statusCounts, recentActivity);
+        return new EmployeeDashboardDto(statusCounts, resolvedToday, recentActivity);
     }
 }

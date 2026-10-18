@@ -9,10 +9,11 @@
     <p class="ticket-detail__state ticket-detail__state--error">Could not load ticket.</p>
   } @else if (ticket.value(); as t) {
     <header class="ticket-detail__header">
-      <h1>{{ t.title }}</h1>
+      <div><p class="ticket-detail__eyebrow">TICKET #{{ t.id.slice(0, 8) }}</p><h1>{{ t.title }}</h1></div>
       <div class="ticket-detail__meta">
         <span class="badge badge--status">{{ statusLabel(t.status) }}</span>
         <span class="badge badge--priority">{{ priorityLabel(t.priority) }}</span>
+        @if (t.escalatedAt) { <span class="badge badge--priority">Escalated</span> }
       </div>
     </header>
 
@@ -42,6 +43,8 @@
           Close
         </button>
       }
+      @if (canReopen()) { <button type="button" class="btn btn--secondary" [disabled]="actionBusy()" (click)="reopen()">Reopen</button> }
+      @if (canEscalate()) { <button type="button" class="btn btn--danger" [disabled]="actionBusy()" (click)="escalate()">Escalate</button> }
       @if (canCancel()) {
   <button type="button" class="btn btn--danger"
           [disabled]="actionBusy()" (click)="cancel()">
@@ -70,13 +73,68 @@
       }
     </div>
 
-    <section class="ticket-detail__section">
+    <section class="ticket-detail__section ticket-detail__section--description">
       <h2>Description</h2>
       <p class="ticket-detail__description">{{ t.description }}</p>
     </section>
 
-    <section class="ticket-detail__section">
-      <h2>Comments</h2>
+    <section class="ticket-detail__section ticket-detail__sla-card">
+      <div><p class="ticket-detail__eyebrow">SERVICE TARGET</p><h2>SLA due {{ t.slaDueAt | date: 'medium' }}</h2></div>
+      <p>@if (t.escalatedAt) { Escalated {{ t.escalatedAt | date: 'short' }} } @else { This ticket is being tracked against its priority target. }</p>
+    </section>
+
+    <section class="ticket-detail__section ticket-detail__files">
+      <div class="ticket-detail__section-heading"><div><p class="ticket-detail__eyebrow">EVIDENCE</p><h2>Attachments</h2></div><label class="btn btn--secondary">＋ Add file <input type="file" hidden (change)="uploadAttachment($event)" /></label></div>
+      @if (attachments.value().length === 0) {
+        <p class="ticket-detail__state">No attachments yet.</p>
+      } @else {
+        <ul class="ticket-detail__attachments">
+          @for (attachment of attachments.value(); track attachment.id) {
+            @if (isImage(attachment.contentType)) {
+              <li class="ticket-detail__attachment ticket-detail__attachment--image">
+                <figure class="ticket-detail__preview">
+                  @if (imageUrl(attachment.id); as preview) {
+                    <button type="button" class="ticket-detail__preview-open"
+                            [attr.aria-label]="'View ' + attachment.fileName + ' full size'"
+                            (click)="openLightbox(preview, attachment.fileName)">
+                      <img [src]="preview" [alt]="attachment.fileName" loading="lazy" />
+                    </button>
+                  } @else {
+                    <span class="ticket-detail__preview-loading">Loading preview…</span>
+                  }
+                  <figcaption>
+                    <a [href]="ticketService.downloadAttachmentUrl(id(), attachment.id)">{{ attachment.fileName }}</a>
+                    <span>{{ attachment.sizeBytes / 1024 | number: '1.0-0' }} KB</span>
+                  </figcaption>
+                </figure>
+              </li>
+            } @else {
+              <li class="ticket-detail__attachment">
+                <span class="ticket-detail__file-icon">↧</span>
+                <a [href]="ticketService.downloadAttachmentUrl(id(), attachment.id)">{{ attachment.fileName }}</a>
+                <span>{{ attachment.sizeBytes / 1024 | number: '1.0-0' }} KB</span>
+              </li>
+            }
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="ticket-detail__section ticket-detail__history-card">
+      <div class="ticket-detail__section-heading"><div><p class="ticket-detail__eyebrow">ACTIVITY</p><h2>Ticket history</h2></div></div>
+      @if (history.value().length === 0) {
+        <p class="ticket-detail__state">No history recorded yet.</p>
+      } @else {
+        <ul class="ticket-detail__history">
+          @for (entry of history.value(); track entry.id) {
+            <li><i></i><div><strong>{{ entry.action }}</strong>@if (entry.details) { <p>{{ entry.details }}</p> } <span>{{ entry.occurredAt | date: 'short' }}</span></div></li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="ticket-detail__section ticket-detail__comment-card">
+      <div class="ticket-detail__section-heading"><div><p class="ticket-detail__eyebrow">CONVERSATION</p><h2>Comments</h2></div></div>
 
       @if (comments.value().length === 0) {
         <p class="ticket-detail__state">No comments yet.</p>
@@ -95,8 +153,8 @@
       }
     </section>
 
-    <section class="ticket-detail__section">
-      <h2>Add a comment</h2>
+    <section class="ticket-detail__section ticket-detail__compose-card">
+      <p class="ticket-detail__eyebrow">ADD NOTE</p><h2>Reply to this request</h2>
 
       <form (ngSubmit)="submitComment()" class="ticket-detail__form">
         <textarea
@@ -120,3 +178,11 @@
     </section>
   }
 </div>
+
+@if (lightbox(); as lb) {
+  <div class="ticket-detail__lightbox" role="dialog" aria-modal="true" [attr.aria-label]="lb.name" (click)="closeLightbox()">
+    <button type="button" class="ticket-detail__lightbox-close" aria-label="Close full-size preview" (click)="closeLightbox()">×</button>
+    <img class="ticket-detail__lightbox-image" [src]="lb.url" [alt]="lb.name" (click)="$event.stopPropagation()" />
+    <p class="ticket-detail__lightbox-caption">{{ lb.name }}</p>
+  </div>
+}

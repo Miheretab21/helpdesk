@@ -24,6 +24,8 @@ public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
 
         builder.Property(t => t.CreatedAt).IsRequired();
         builder.Property(t => t.UpdatedAt).IsRequired();
+        builder.Property(t => t.SlaDueAt).IsRequired();
+        builder.HasIndex(t => t.SlaDueAt);
 
         builder.HasIndex(t => t.AssignedToId);
         builder.HasIndex(t => t.CreatedById);

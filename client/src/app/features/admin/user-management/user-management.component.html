@@ -39,7 +39,9 @@
             <tr class="users-table__row">
               <td class="users-table__cell">{{ user.fullName }}</td>
               <td class="users-table__cell">{{ user.email }}</td>
-              <td class="users-table__cell">{{ UserRoleLabels[user.role] }}</td>
+              <td class="users-table__cell">
+                <span [class]="'role-badge ' + roleClass(user.role)">{{ UserRoleLabels[user.role] }}</span>
+              </td>
               <td class="users-table__cell users-table__cell--actions">
                 <button
                   (click)="openEditModal(user)"

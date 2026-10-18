@@ -1,13 +1,24 @@
 <div class="dashboard-layout">
   <!-- Sidebar Navigation -->
   <aside class="dashboard-sidebar">
+    <div class="sidebar-brand">
+      <span class="sidebar-brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+      </span>
+      <span class="sidebar-brand__name">HelpDesk</span>
+    </div>
+
     <nav class="sidebar-nav">
       <div class="sidebar-section">
-        <h3 class="sidebar-section__title">My Tickets</h3>
+        <h3 class="sidebar-section__title">My Work</h3>
         <button
           (click)="setActivePane(AgentDashboardPane.MyTickets)"
           [class.sidebar-nav__item--active]="activePane() === AgentDashboardPane.MyTickets"
+          [attr.aria-current]="activePane() === AgentDashboardPane.MyTickets ? 'page' : null"
           class="sidebar-nav__item">
+          <span class="sidebar-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>
+          </span>
           <span class="sidebar-nav__label">My Assigned Tickets</span>
         </button>
       </div>
@@ -17,7 +28,11 @@
         <button
           (click)="setActivePane(AgentDashboardPane.UnassignedQueue)"
           [class.sidebar-nav__item--active]="activePane() === AgentDashboardPane.UnassignedQueue"
+          [attr.aria-current]="activePane() === AgentDashboardPane.UnassignedQueue ? 'page' : null"
           class="sidebar-nav__item">
+          <span class="sidebar-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l1.7 2.8h5.6L16.5 13h4"/><path d="M5.2 5.5h13.6l1.7 7.5v5.5H3.5V13z"/></svg>
+          </span>
           <span class="sidebar-nav__label">Unassigned Tickets</span>
         </button>
       </div>
@@ -27,7 +42,11 @@
         <button
           (click)="setActivePane(AgentDashboardPane.RecentActivity)"
           [class.sidebar-nav__item--active]="activePane() === AgentDashboardPane.RecentActivity"
+          [attr.aria-current]="activePane() === AgentDashboardPane.RecentActivity ? 'page' : null"
           class="sidebar-nav__item">
+          <span class="sidebar-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>
+          </span>
           <span class="sidebar-nav__label">Recent Activity</span>
         </button>
       </div>

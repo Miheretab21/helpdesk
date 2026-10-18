@@ -1,12 +1,12 @@
 <div class="create-ticket">
   <header class="create-ticket__header">
-    <h1>New Ticket</h1>
+    <div><p class="form-eyebrow">NEW REQUEST</p><h1>Tell us what you need</h1><p>Give the support team enough context to resolve this quickly.</p></div>
     <a routerLink="/" class="create-ticket__back">← Back to list</a>
   </header>
 
   <form class="create-ticket__form" (ngSubmit)="submit()">
     <label>
-      Title
+      <span>What needs attention?</span>
       <input
         type="text"
         [(ngModel)]="title"
@@ -17,7 +17,7 @@
     </label>
 
     <label>
-      Description
+      <span>Describe the issue</span>
       <textarea
         [(ngModel)]="description"
         name="description"
@@ -28,7 +28,7 @@
     </label>
 
     <label>
-      Category
+      <span>Category</span>
       <select [(ngModel)]="categoryId" name="categoryId" required>
         <option value="''">Select a category…</option>
         @for (category of categories.value(); track category.id) {
@@ -38,7 +38,7 @@
     </label>
 
     <label>
-      Priority
+      <span>Priority</span>
       <select [value]="priority()" (change)="onPriorityChange($event)" name="priority" required>
         @for (p of priorities; track p.value) {
           <option [value]="p.value">{{ p.label }}</option>

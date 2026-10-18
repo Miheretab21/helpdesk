@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
@@ -9,6 +9,7 @@ import { DashboardTicketPaneComponent } from '../dashboard-ticket-pane/dashboard
 
 export interface EmployeeDashboardData {
   myTicketsByStatus: Record<number, number>;
+  resolvedToday: number;
   myRecentActivity: Array<{
     id: string;
     title: string;
@@ -20,6 +21,7 @@ export interface EmployeeDashboardData {
 
 export enum EmployeeDashboardPane {
   MyTickets = 'my-tickets',
+  Assigned = 'assigned',
   RecentActivity = 'recent',
 }
 
@@ -50,6 +52,21 @@ export class EmployeeDashboardComponent {
     const data = this.myTickets.value();
     if (!data || !data.myTicketsByStatus) return 0;
     return data.myTicketsByStatus[statusCode] || 0;
+  }
+
+  // Quick metrics shown above the ticket pane.
+  protected readonly openCount = computed(() =>
+    this.sumStatuses([TicketStatus.New, TicketStatus.Assigned, TicketStatus.InProgress]));
+
+  protected readonly pendingCount = computed(() =>
+    this.sumStatuses([TicketStatus.New, TicketStatus.Assigned]));
+
+  protected readonly resolvedTodayCount = computed(() => this.myTickets.value()?.resolvedToday ?? 0);
+
+  private sumStatuses(statuses: TicketStatus[]): number {
+    const data = this.myTickets.value();
+    if (!data || !data.myTicketsByStatus) return 0;
+    return statuses.reduce((sum, status) => sum + (data.myTicketsByStatus[status] || 0), 0);
   }
 
   protected getTotalCount(): number {

@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { ApiService } from './api.service';
-import { TicketDetail, TicketListItem, TicketPriority, TicketStatus } from '../models/ticket.model';
+import { TicketAttachment, TicketAuditEntry, TicketDetail, TicketListItem, TicketPriority, TicketStatus } from '../models/ticket.model';
 
 export interface CreateTicketRequest {
   title: string;
@@ -24,6 +25,7 @@ export interface TicketFilters {
 @Injectable({ providedIn: 'root' })
 export class TicketService {
   private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
 
   list(filters?: TicketFilters) {
     let url = '/api/tickets';
@@ -58,4 +60,16 @@ export class TicketService {
   changeStatus(ticketId: string, targetStatus: TicketStatus) {
     return this.api.post<void>(`/api/tickets/${ticketId}/status`, { targetStatus });
   }
+  reopen(ticketId: string) { return this.api.post<void>(`/api/tickets/${ticketId}/reopen`, {}); }
+  escalate(ticketId: string) { return this.api.post<void>(`/api/tickets/${ticketId}/escalate`, {}); }
+  attachments(ticketId: string) { return this.api.get<TicketAttachment[]>(`/api/tickets/${ticketId}/attachments`); }
+  history(ticketId: string) { return this.api.get<TicketAuditEntry[]>(`/api/tickets/${ticketId}/history`); }
+  uploadAttachment(ticketId: string, file: File) { const data = new FormData(); data.append('file', file); return this.api.postForm<TicketAttachment>(`/api/tickets/${ticketId}/attachments`, data); }
+  downloadAttachmentUrl(ticketId: string, attachmentId: string) { return `/api/tickets/${ticketId}/attachments/${attachmentId}/download`; }
+  /** Fetches an attachment as a Blob so callers can render inline previews (the
+   *  download URL needs the auth header, which a plain <img src> cannot send). */
+  downloadAttachment(ticketId: string, attachmentId: string) {
+    return this.http.get(`/api/tickets/${ticketId}/attachments/${attachmentId}/download`, { responseType: 'blob' });
+  }
+  bulk(ticketIds: string[], action: 'escalate' | 'start' | 'resolve' | 'assign', assignToUserId?: string) { return this.api.post<void>('/api/tickets/bulk', { ticketIds, action, assignToUserId }); }
 }

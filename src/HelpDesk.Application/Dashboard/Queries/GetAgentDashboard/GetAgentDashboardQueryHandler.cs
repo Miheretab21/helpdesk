@@ -55,7 +55,9 @@ public sealed class GetAgentDashboardQueryHandler
                 t.AssignedToId,
                 t.CreatedById,
                 t.CreatedAt,
-                t.UpdatedAt))
+                t.UpdatedAt,
+                t.SlaDueAt,
+                t.EscalatedAt))
             .ToList();
 
         return new AgentDashboardDto(statusCounts, unassignedCount, myRecentActivity);

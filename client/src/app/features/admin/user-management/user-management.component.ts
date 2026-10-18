@@ -185,4 +185,15 @@ export class UserManagementComponent {
     const value = parseInt((event.target as HTMLSelectElement).value, 10) as UserRole;
     this.updateFormField('role', value);
   }
+
+  protected roleClass(role: UserRole): string {
+    switch (role) {
+      case UserRole.Admin:
+        return 'role-badge--admin';
+      case UserRole.Agent:
+        return 'role-badge--agent';
+      default:
+        return 'role-badge--employee';
+    }
+  }
 }

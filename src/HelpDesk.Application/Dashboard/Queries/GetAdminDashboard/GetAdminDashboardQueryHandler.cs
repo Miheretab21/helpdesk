@@ -87,7 +87,9 @@ public sealed class GetAdminDashboardQueryHandler
                 t.AssignedToId,
                 t.CreatedById,
                 t.CreatedAt,
-                t.UpdatedAt))
+                t.UpdatedAt,
+                t.SlaDueAt,
+                t.EscalatedAt))
             .ToList();
 
         // Top agents this week (resolved tickets in last 7 days)

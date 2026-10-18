@@ -1,6 +1,6 @@
 <div class="ticket-list">
   <header class="ticket-list__header">
-    <h1>Tickets</h1>
+    <div><p class="ticket-list__eyebrow">SERVICE DESK</p><h1>Ticket queue</h1><p class="ticket-list__subtitle">Prioritize incoming work and keep every request moving.</p></div>
     @if (canCreateTicket()) {
     <a routerLink="/tickets/new" class="btn btn--primary">New Ticket</a>
   }
@@ -8,6 +8,7 @@
 
   <!-- Filters Section -->
   <section class="ticket-list__filters">
+    <div class="ticket-list__filter-heading"><span>Find and refine</span><small>Live queue</small></div>
     <div class="ticket-list__search">
       <input
         type="text"
@@ -53,6 +54,15 @@
     </div>
   </section>
 
+  @if ((isAgent() || isAdmin()) && selectedCount() > 0) {
+    <div class="ticket-list__bulk">
+      <strong>{{ selectedCount() }} selected</strong>
+      <button class="btn btn--secondary" [disabled]="bulkBusy()" (click)="bulk('start')">Start work</button>
+      <button class="btn btn--secondary" [disabled]="bulkBusy()" (click)="bulk('resolve')">Resolve</button>
+      <button class="btn btn--danger" [disabled]="bulkBusy()" (click)="bulk('escalate')">Escalate</button>
+    </div>
+  }
+
   @if (tickets.isLoading()) {
     <div class="ticket-list__state">
       <app-spinner size="large" />
@@ -78,19 +88,21 @@
     <table class="ticket-list__table">
       <thead>
         <tr>
-          <th>Title</th>
+          @if (isAgent() || isAdmin()) { <th></th> }
+          <th>Request</th>
           <th>Status</th>
           <th>Priority</th>
-          <th>Updated</th>
+          <th>SLA / Updated</th>
         </tr>
       </thead>
       <tbody>
         @for (ticket of tickets.value(); track ticket.id) {
           <tr [routerLink]="['/tickets', ticket.id]" class="ticket-list__row">
-            <td>{{ ticket.title }}</td>
-            <td>{{ statusLabel(ticket.status) }}</td>
-            <td>{{ priorityLabel(ticket.priority) }}</td>
-            <td>{{ ticket.updatedAt | date: 'short' }}</td>
+            @if (isAgent() || isAdmin()) { <td><input type="checkbox" [checked]="isSelected(ticket.id)" (click)="toggleSelected(ticket.id, $event)" aria-label="Select ticket" /></td> }
+            <td><strong class="ticket-list__title">{{ ticket.title }}</strong><span class="ticket-list__id">#{{ ticket.id.slice(0, 8) }}</span></td>
+            <td><span class="ticket-list__tag {{ statusClass(ticket.status) }}">{{ statusLabel(ticket.status) }}</span></td>
+            <td><span class="ticket-list__tag {{ priorityClass(ticket.priority) }}">{{ priorityLabel(ticket.priority) }}</span></td>
+            <td><span class="ticket-list__sla">Due {{ ticket.slaDueAt | date: 'MMM d, HH:mm' }}</span><span class="ticket-list__updated">Updated {{ ticket.updatedAt | date: 'short' }}</span></td>
           </tr>
         }
       </tbody>

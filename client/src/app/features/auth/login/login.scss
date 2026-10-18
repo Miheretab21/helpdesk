@@ -1,77 +1,175 @@
 .login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: #f5f7fa;
+  // Page layout is provided by the global view system; this file only covers
+  // contrast fixes plus the inline validation and loading states.
 
-  &__form {
+  &__intro {
+    h1 {
+      // Pure white + a soft shadow keeps the hero readable over the gradient.
+      color: #ffffff;
+      text-shadow: 0 2px 26px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  &__intro-copy {
+    color: #c9c9d8;
+  }
+
+  &__eyebrow {
+    color: #cdc6ff;
+  }
+
+  &__field {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    width: 320px;
-    padding: 2rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    gap: 0.4rem;
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 650;
+  }
 
-    h1 {
-      margin: 0 0 0.5rem;
-      font-size: 1.5rem;
+  &__field-label {
+    letter-spacing: 0.01em;
+  }
+
+  input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.65rem 0.8rem;
+    color: var(--text);
+    background: rgba(8, 8, 14, 0.72);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+    &::placeholder {
+      color: var(--subtle);
     }
 
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.875rem;
-      color: #333;
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+      // High-contrast focus ring: solid inner keyline + soft outer glow so the
+      // active field is unmistakable for low-vision / keyboard users.
+      box-shadow:
+        0 0 0 2px var(--bg),
+        0 0 0 4px var(--primary),
+        0 0 24px rgba(124, 108, 255, 0.45);
     }
 
-    input {
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
-
-      &:focus {
-        outline: none;
-        border-color: #2563eb;
-      }
+    &:focus-visible {
+      outline: none;
     }
+
+    &.is-invalid:not(:focus) {
+      border-color: var(--danger);
+    }
+
+    &.is-invalid {
+      box-shadow:
+        0 0 0 2px var(--bg),
+        0 0 0 4px var(--danger),
+        0 0 22px rgba(239, 93, 112, 0.4);
+    }
+
+    &.is-valid:not(:focus) {
+      border-color: rgba(79, 212, 160, 0.55);
+    }
+  }
+
+  &__field-error {
+    color: #ff9ca9;
+    font-size: 0.72rem;
+    font-weight: 600;
   }
 
   &__hint {
-    font-size: 0.75rem;
-    color: #888;
-    margin: 0 0 0.5rem;
-  }
-
-  &__error {
-    color: #b00020;
-    font-size: 0.875rem;
     margin: 0;
+    color: var(--subtle);
+    font-size: 0.73rem;
+    line-height: 1.5;
   }
-}
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
+  &__demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0.85rem;
+  }
 
-  &--primary {
-    background-color: #2563eb;
-    color: white;
+  &__demo-label {
+    color: var(--muted);
+    font-size: 0.73rem;
+    font-weight: 650;
+  }
+
+  &__demo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 32px;
+    padding: 0.3rem 0.7rem;
+    color: var(--text);
+    background: rgba(124, 108, 255, 0.1);
+    border: 1px solid rgba(124, 108, 255, 0.28);
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 
     &:hover:not(:disabled) {
-      background-color: #1d4ed8;
+      background: rgba(124, 108, 255, 0.2);
+      border-color: rgba(124, 108, 255, 0.5);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--primary);
     }
 
     &:disabled {
-      opacity: 0.5;
+      opacity: 0.55;
       cursor: not-allowed;
     }
+  }
+
+  &__demo-role {
+    color: #cfc8ff;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  &__error {
+    margin: 0;
+    color: #ff9ca9;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  &__submit {
+    width: 100%;
+    margin-top: 0.4rem;
+    gap: 0.5rem;
+  }
+
+  &__spinner {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: login-spin 0.7s linear infinite;
+  }
+}
+
+@keyframes login-spin {
+  to {
+    transform: rotate(360deg);
   }
 }

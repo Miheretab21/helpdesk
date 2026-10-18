@@ -34,7 +34,9 @@ public sealed class GetTicketByIdQueryHandler
             ticket.AssignedToId,
             ticket.CreatedById,
             ticket.CreatedAt,
-            ticket.UpdatedAt);
+            ticket.UpdatedAt,
+            ticket.SlaDueAt,
+            ticket.EscalatedAt);
     }
 
     private static bool IsVisible(Domain.Entities.Ticket ticket, Guid userId, UserRole role) => role switch

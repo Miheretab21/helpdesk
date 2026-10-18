@@ -71,6 +71,8 @@ builder.Services.AddScoped<ITicketRepository, EfTicketRepository>();
 builder.Services.AddScoped<ICategoryRepository, EfCategoryRepository>();
 builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
 builder.Services.AddScoped<IUserRepository, EfUserRepository>();
+builder.Services.AddScoped<ITicketAttachmentRepository, EfTicketAttachmentRepository>();
+builder.Services.AddScoped<ITicketAuditRepository, EfTicketAuditRepository>();
 
 // ---------------------------------------------------------------------------
 // Security services

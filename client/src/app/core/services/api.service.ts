@@ -12,6 +12,9 @@ export class ApiService {
   post<T>(url: string, body: unknown) {
     return this.http.post<T>(url, body);
   }
+  postForm<T>(url: string, body: FormData) {
+    return this.http.post<T>(url, body);
+  }
   put<T>(url: string, body: unknown) {
   return this.http.put<T>(url, body);
 }

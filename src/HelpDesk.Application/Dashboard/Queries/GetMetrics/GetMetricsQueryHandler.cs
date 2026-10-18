@@ -60,7 +60,9 @@ public sealed class GetMetricsQueryHandler
                 t.AssignedToId,
                 t.CreatedById,
                 t.CreatedAt,
-                t.UpdatedAt))
+                t.UpdatedAt,
+                t.SlaDueAt,
+                t.EscalatedAt))
             .ToList();
 
         return new DashboardMetricsDto(statusCounts, priorityCounts, recentActivity);

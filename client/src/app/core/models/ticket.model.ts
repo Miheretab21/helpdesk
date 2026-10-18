@@ -23,6 +23,8 @@ export interface TicketListItem {
   createdById: string;
   createdAt: string;
   updatedAt: string;
+  slaDueAt: string;
+  escalatedAt: string | null;
 }
 
 export interface Category {
@@ -41,4 +43,9 @@ export interface TicketDetail {
   createdById: string;
   createdAt: string;
   updatedAt: string;
+  slaDueAt: string;
+  escalatedAt: string | null;
 }
+
+export interface TicketAttachment { id: string; fileName: string; contentType: string; sizeBytes: number; uploadedById: string; createdAt: string; }
+export interface TicketAuditEntry { id: string; action: string; details: string | null; actorId: string | null; occurredAt: string; }

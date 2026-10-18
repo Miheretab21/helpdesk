@@ -29,8 +29,15 @@ public sealed class GetTicketsQueryHandler
 
         var visible = ApplyVisibilityRule(tickets, query.RequestingUserId, query.RequestingUserRole);
 
-        return visible
-            .OrderByDescending(t => t.UpdatedAt)
+        // Narrowing filters run *after* the visibility rule so a caller can never
+        // widen their reach by asking for an assignee that is out of their scope.
+        if (query.UnassignedOnly == true)
+            visible = visible.Where(t => t.AssignedToId is null);
+
+        if (query.AssignedToIdFilter is not null)
+            visible = visible.Where(t => t.AssignedToId == query.AssignedToIdFilter);
+
+        return ApplySort(visible, query.SortBy, query.SortDirection)
             .Select(t => new TicketListItemDto(
                 t.Id,
                 t.Title,
@@ -39,7 +46,9 @@ public sealed class GetTicketsQueryHandler
                 t.AssignedToId,
                 t.CreatedById,
                 t.CreatedAt,
-                t.UpdatedAt))
+                t.UpdatedAt,
+                t.SlaDueAt,
+                t.EscalatedAt))
             .ToList();
     }
 
@@ -53,4 +62,24 @@ public sealed class GetTicketsQueryHandler
         UserRole.Employee => tickets.Where(t => t.CreatedById == userId),
         _                 => Enumerable.Empty<Ticket>()
     };
+
+    private static IEnumerable<Ticket> ApplySort(
+        IEnumerable<Ticket> tickets,
+        string? sortBy,
+        string? sortDirection)
+    {
+        // Most recently updated first is the default queue order.
+        var ascending = string.Equals(sortDirection, "asc", StringComparison.OrdinalIgnoreCase);
+
+        return (sortBy?.Trim().ToLowerInvariant()) switch
+        {
+            "created"  => ascending ? tickets.OrderBy(t => t.CreatedAt)  : tickets.OrderByDescending(t => t.CreatedAt),
+            "priority" => ascending ? tickets.OrderBy(t => t.Priority)   : tickets.OrderByDescending(t => t.Priority),
+            "status"   => ascending ? tickets.OrderBy(t => t.Status)     : tickets.OrderByDescending(t => t.Status),
+            "title"    => ascending
+                ? tickets.OrderBy(t => t.Title, StringComparer.OrdinalIgnoreCase)
+                : tickets.OrderByDescending(t => t.Title, StringComparer.OrdinalIgnoreCase),
+            _          => ascending ? tickets.OrderBy(t => t.UpdatedAt)  : tickets.OrderByDescending(t => t.UpdatedAt),
+        };
+    }
 }

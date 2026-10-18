@@ -10,4 +10,8 @@ public sealed record GetTicketsQuery(
     Guid? CategoryFilter = null,
     string? SearchFilter = null,
     TicketStatus? ExcludeStatusFilter = null,
-    string? ExcludeStatusesFilter = null);
+    string? ExcludeStatusesFilter = null,
+    Guid? AssignedToIdFilter = null,
+    bool? UnassignedOnly = null,
+    string? SortBy = null,
+    string? SortDirection = null);

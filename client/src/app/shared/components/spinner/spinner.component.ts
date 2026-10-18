@@ -14,7 +14,9 @@ type SpinnerSize = 'small' | 'medium' | 'large';
   `,
   styles: [`
     .spinner {
+      position: relative;
       display: inline-block;
+      flex: none;
     }
 
     .spinner--small {

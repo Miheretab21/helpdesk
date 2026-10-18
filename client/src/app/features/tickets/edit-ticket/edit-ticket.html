@@ -1,6 +1,6 @@
 <div class="edit-ticket">
   <header class="edit-ticket__header">
-    <h1>Edit Ticket</h1>
+    <div><p class="form-eyebrow">TICKET SETTINGS</p><h1>Refine request details</h1></div>
     <a [routerLink]="['/tickets', id()]" class="edit-ticket__back">← Back to ticket</a>
   </header>
 
@@ -11,17 +11,17 @@
   } @else {
     <form class="edit-ticket__form" (ngSubmit)="submit()">
       <label>
-        Title
+        <span>What needs attention?</span>
         <input type="text" [(ngModel)]="title" name="title" maxlength="200" required />
       </label>
 
       <label>
-        Description
+        <span>Describe the issue</span>
         <textarea [(ngModel)]="description" name="description" rows="6" maxlength="4000" required></textarea>
       </label>
 
       <label>
-        Category
+        <span>Category</span>
         <select [(ngModel)]="categoryId" name="categoryId" required>
           @for (category of categories.value(); track category.id) {
             <option [ngValue]="category.id">{{ category.name }}</option>

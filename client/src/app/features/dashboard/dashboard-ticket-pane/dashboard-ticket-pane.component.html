@@ -1,35 +1,74 @@
 <section class="dashboard__section dashboard-pane">
-  <h2>{{ title }}</h2>
+  <header class="dashboard-pane__header">
+    <h2>{{ title }}</h2>
+    @if (!tickets.isLoading() && !tickets.error() && totalCount() > 0) {
+      <span class="dashboard-pane__total">{{ totalCount() }} total</span>
+    }
+  </header>
+
+  <ng-content></ng-content>
 
   @if (tickets.isLoading()) {
-    <div class="dashboard-pane__loading">
-      <app-spinner size="medium" />
-      <p>Loading tickets…</p>
+    <div class="dashboard-pane__skeleton" aria-hidden="true">
+      @for (row of skeletonRows; track row) {
+        <div class="skeleton-row">
+          <span class="skeleton-bar skeleton-bar--title"></span>
+          <span class="skeleton-bar"></span>
+          <span class="skeleton-bar"></span>
+          <span class="skeleton-bar skeleton-bar--short"></span>
+        </div>
+      }
     </div>
+    <p class="dashboard-pane__loading-text" role="status">Loading tickets…</p>
   } @else if (tickets.error()) {
-    <p class="dashboard-pane__error">Could not load tickets.</p>
-  } @else if (tickets.value().length === 0) {
-    <p class="dashboard-pane__empty">{{ emptyMessage }}</p>
+    <p class="dashboard-pane__error" role="alert">Could not load tickets. Please try again.</p>
+  } @else if (totalCount() === 0) {
+    <app-empty-state
+      [icon]="emptyIcon"
+      [title]="emptyTitle"
+      [message]="emptyMessage">
+    </app-empty-state>
   } @else {
     <div class="tickets-table">
       <div class="table-header">
-        <div class="table-col table-col--title">Ticket</div>
-        <div class="table-col table-col--status">Status</div>
-        <div class="table-col table-col--priority">Priority</div>
-        <div class="table-col table-col--updated">Updated</div>
+        <button type="button" class="table-col table-col--title table-col--sortable"
+                (click)="sort('title')"
+                [attr.aria-sort]="sortBy() === 'title' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'">
+          Ticket <span class="sort-mark">{{ sortIndicator('title') }}</span>
+        </button>
+        <button type="button" class="table-col table-col--status table-col--sortable"
+                (click)="sort('status')"
+                [attr.aria-sort]="sortBy() === 'status' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'">
+          Status <span class="sort-mark">{{ sortIndicator('status') }}</span>
+        </button>
+        <button type="button" class="table-col table-col--priority table-col--sortable"
+                (click)="sort('priority')"
+                [attr.aria-sort]="sortBy() === 'priority' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'">
+          Priority <span class="sort-mark">{{ sortIndicator('priority') }}</span>
+        </button>
+        <button type="button" class="table-col table-col--updated table-col--sortable"
+                (click)="sort('updated')"
+                [attr.aria-sort]="sortBy() === 'updated' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'">
+          Updated <span class="sort-mark">{{ sortIndicator('updated') }}</span>
+        </button>
       </div>
 
       <div class="table-body">
-        @for (ticket of tickets.value(); track ticket.id) {
-          <a [routerLink]="['/tickets', ticket.id]" class="table-row">
+        @for (ticket of pagedTickets(); track ticket.id) {
+          <a [routerLink]="['/tickets', ticket.id]" class="table-row" [attr.title]="ticket.title">
             <div class="table-col table-col--title">
-              <div class="ticket-title">{{ ticket.title }}</div>
+              <span class="ticket-title">{{ ticket.title }}</span>
+              <span class="ticket-ref">#{{ ticket.id.slice(0, 8) }}</span>
             </div>
             <div class="table-col table-col--status">
-              <span class="badge badge--status">{{ statusLabel(ticket.status) }}</span>
+              <span [class]="'badge ' + statusClass(ticket.status)">
+                <span class="badge__dot" aria-hidden="true"></span>
+                {{ statusLabel(ticket.status) }}
+              </span>
             </div>
             <div class="table-col table-col--priority">
-              <span class="badge" [class]="'badge--' + getPriorityClass(ticket.priority)">
+              <span [class]="'priority-badge ' + priorityClass(ticket.priority)">
+                <span class="priority-badge__dot" aria-hidden="true"></span>
                 {{ priorityLabel(ticket.priority) }}
               </span>
             </div>
@@ -42,5 +81,22 @@
         }
       </div>
     </div>
+
+    <footer class="dashboard-pane__footer">
+      <span class="dashboard-pane__range">
+        Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ totalCount() }} tickets
+      </span>
+      @if (totalPages() > 1) {
+        <div class="pager">
+          <button type="button" class="btn btn--secondary" [disabled]="page() === 1" (click)="setPage(page() - 1)">
+            Previous
+          </button>
+          <span class="pager__label">Page {{ page() }} / {{ totalPages() }}</span>
+          <button type="button" class="btn btn--secondary" [disabled]="page() === totalPages()" (click)="setPage(page() + 1)">
+            Next
+          </button>
+        </div>
+      }
+    </footer>
   }
 </section>

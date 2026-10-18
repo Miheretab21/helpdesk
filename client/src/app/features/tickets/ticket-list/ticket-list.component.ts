@@ -14,6 +14,8 @@ import { SpinnerComponent } from '../../../shared/components/spinner/spinner.com
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { signal } from '@angular/core';
 import { debounceTime, Subject } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -25,6 +27,7 @@ export class TicketListComponent {
   private readonly ticketService = inject(TicketService);
   private readonly categoryService = inject(CategoryService);
   private readonly route = inject(ActivatedRoute);
+  private readonly toast = inject(ToastService);
 
   protected readonly TicketStatus = TicketStatus;
   protected readonly TicketPriority = TicketPriority;
@@ -35,6 +38,8 @@ export class TicketListComponent {
   protected readonly categoryFilter = signal<string | null>(null);
   protected readonly searchFilter = signal<string>('');
   protected readonly unassignedOnlyFilter = signal<boolean>(false);
+  protected readonly selectedTicketIds = signal<Set<string>>(new Set());
+  protected readonly bulkBusy = signal(false);
 
   private readonly searchSubject = new Subject<string>();
 
@@ -87,6 +92,9 @@ export class TicketListComponent {
     return TicketPriority[priority];
   }
 
+  protected statusClass(status: TicketStatus): string { return `status--${TicketStatus[status].toLowerCase().replace(' ', '-')}`; }
+  protected priorityClass(priority: TicketPriority): string { return `priority--${TicketPriority[priority].toLowerCase()}`; }
+
   protected resetFilters() {
     this.statusFilter.set(null);
     this.priorityFilter.set(null);
@@ -102,6 +110,7 @@ export class TicketListComponent {
   protected readonly isAgent = computed(() => this.auth.isInRole(UserRole.Agent));
   protected readonly isAdmin = computed(() => this.auth.isInRole(UserRole.Admin));
   protected readonly shouldShowPriorityFilter = computed(() => !this.isEmployee());
+  protected readonly selectedCount = computed(() => this.selectedTicketIds().size);
 
   constructor() {
     // Set up debounced search
@@ -136,5 +145,19 @@ export class TicketListComponent {
   protected onSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
     this.searchSubject.next(target.value);
+  }
+  protected toggleSelected(id: string, event: Event) {
+    event.stopPropagation();
+    const next = new Set(this.selectedTicketIds());
+    next.has(id) ? next.delete(id) : next.add(id);
+    this.selectedTicketIds.set(next);
+  }
+  protected isSelected(id: string) { return this.selectedTicketIds().has(id); }
+  protected async bulk(action: 'escalate' | 'start' | 'resolve') {
+    if (!this.selectedCount() || this.bulkBusy()) return;
+    this.bulkBusy.set(true);
+    try { await firstValueFrom(this.ticketService.bulk([...this.selectedTicketIds()], action)); this.selectedTicketIds.set(new Set()); this.tickets.reload(); this.toast.success(`${action} applied to selected tickets`); }
+    catch { this.toast.error('Some tickets could not be updated. Check their current status and permissions.'); }
+    finally { this.bulkBusy.set(false); }
   }
 }

@@ -12,4 +12,6 @@ public sealed record TicketDetailDto(
     Guid? AssignedToId,
     Guid CreatedById,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    DateTime SlaDueAt,
+    DateTime? EscalatedAt);

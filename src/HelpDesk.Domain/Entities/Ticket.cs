@@ -16,6 +16,8 @@ public class Ticket : Entity
 
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
+    public DateTime SlaDueAt { get; private set; }
+    public DateTime? EscalatedAt { get; private set; }
 
     // EF Core needs a parameterless constructor to materialize from the DB.
     private Ticket() { }
@@ -31,6 +33,7 @@ public class Ticket : Entity
         CategoryId = categoryId;
         CreatedById = createdById;
         Status = TicketStatus.New;
+        SlaDueAt = DateTime.UtcNow.Add(GetSlaTarget(priority));
     }
 
     public void Edit(string title, string description, Guid categoryId)
@@ -96,6 +99,25 @@ public class Ticket : Entity
         Touch();
     }
 
+    public void Reopen(Guid byUserId, bool isAdmin = false)
+    {
+        if (CreatedById != byUserId && !isAdmin)
+            throw new DomainException("Only the ticket creator or an admin can reopen a closed ticket.");
+        if (Status != TicketStatus.Closed)
+            throw new DomainException("Only a closed ticket can be reopened.");
+
+        Status = AssignedToId is null ? TicketStatus.New : TicketStatus.Assigned;
+        Touch();
+    }
+
+    public void Escalate()
+    {
+        if (Status is TicketStatus.Closed or TicketStatus.Cancelled)
+            throw new DomainException("Closed or cancelled tickets cannot be escalated.");
+        EscalatedAt ??= DateTime.UtcNow;
+        Touch();
+    }
+
     // ---------------------------------------------------------------------
     // Private helpers
     // ---------------------------------------------------------------------
@@ -126,4 +148,12 @@ public class Ticket : Entity
     }
 
     private void Touch() => UpdatedAt = DateTime.UtcNow;
+
+    private static TimeSpan GetSlaTarget(TicketPriority priority) => priority switch
+    {
+        TicketPriority.Urgent => TimeSpan.FromHours(4),
+        TicketPriority.High => TimeSpan.FromHours(8),
+        TicketPriority.Medium => TimeSpan.FromHours(24),
+        _ => TimeSpan.FromHours(72)
+    };
 }

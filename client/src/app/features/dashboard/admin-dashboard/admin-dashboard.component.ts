@@ -2,8 +2,9 @@ import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { TicketStatus, TicketPriority, Category } from '../../../core/models/ticket.model';
+import { User, UserRole } from '../../../core/models/user.model';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
-import { DashboardTicketPaneComponent } from '../dashboard-ticket-pane/dashboard-ticket-pane.component';
+import { DashboardTicketPaneComponent, DashboardTicketFilters } from '../dashboard-ticket-pane/dashboard-ticket-pane.component';
 import { UserManagementComponent } from '../../admin/user-management/user-management.component';
 
 export interface AdminDashboardData {
@@ -23,6 +24,7 @@ export interface AdminDashboardData {
 }
 
 export enum AdminDashboardPane {
+  Assigned = 'assigned',
   All = 'all',
   Unassigned = 'unassigned',
   ByStatus = 'by-status',
@@ -43,7 +45,7 @@ export class AdminDashboardComponent {
   protected readonly AdminDashboardPane = AdminDashboardPane;
 
   // Track which pane is active (for split-pane display)
-  protected readonly activePane = signal<AdminDashboardPane>(AdminDashboardPane.All);
+  protected readonly activePane = signal<AdminDashboardPane>(AdminDashboardPane.Assigned);
 
   // Track selected status filter for ByStatus pane
   protected readonly selectedStatus = signal<TicketStatus | null>(null);
@@ -58,6 +60,20 @@ export class AdminDashboardComponent {
     () => '/api/categories',
     { defaultValue: [] },
   );
+
+  // Agents and admins that can own a ticket (admin-only endpoint).
+  protected readonly users = httpResource<User[]>(
+    () => '/api/users',
+    { defaultValue: [] },
+  );
+
+  protected readonly assignees = computed(() =>
+    this.users.value().filter(user => user.role !== UserRole.Employee),
+  );
+
+  // Quick search + assignee filter shown above the ticket table.
+  protected readonly searchTerm = signal('');
+  protected readonly assigneeFilter = signal('');
 
   protected readonly statusCounts = computed(() => {
     const data = this.adminData.value();
@@ -76,6 +92,15 @@ export class AdminDashboardComponent {
     const counts = this.statusCounts();
     return counts.reduce((sum, item) => sum + item.count, 0);
   }
+
+  protected getAssignedCount(): number {
+    return this.adminData.value()?.allTicketsByStatus?.[TicketStatus.Assigned] ?? 0;
+  }
+
+  // Status list for the sidebar, minus Assigned (promoted to a top-level queue).
+  protected readonly statusFilterItems = computed(() =>
+    this.statusCounts().filter(item => item.status !== TicketStatus.Assigned),
+  );
 
   protected getCategoryBreakdownList(): Array<{ catId: number; label: string; count: number }> {
     const data = this.adminData.value();
@@ -111,6 +136,47 @@ export class AdminDashboardComponent {
     const workload = this.getWorkloadList();
     return workload.length > 0 ? Math.max(...workload.map(w => w.count)) : 1;
   });
+
+  // Filters implied by the active pane, before the toolbar refinements.
+  private readonly baseFilters = computed<DashboardTicketFilters>(() => {
+    switch (this.activePane()) {
+      case AdminDashboardPane.Assigned:
+        return { status: TicketStatus.Assigned };
+      case AdminDashboardPane.Unassigned:
+        return { status: TicketStatus.New, unassignedOnly: true };
+      case AdminDashboardPane.ByStatus:
+        return this.selectedStatus() !== null ? { status: this.selectedStatus()! } : {};
+      default:
+        return {};
+    }
+  });
+
+  // Pane filters with the toolbar's search term and assignee selection applied.
+  protected readonly ticketFilters = computed<DashboardTicketFilters>(() => {
+    const filters: DashboardTicketFilters = { ...this.baseFilters() };
+    const assignee = this.assigneeFilter();
+
+    if (assignee === 'unassigned') {
+      filters.unassignedOnly = true;
+      filters.assignedToId = undefined;
+    } else if (assignee) {
+      filters.assignedToId = assignee;
+      filters.unassignedOnly = false;
+    }
+
+    const term = this.searchTerm().trim();
+    if (term) filters.search = term;
+
+    return filters;
+  });
+
+  protected onSearch(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  protected onAssigneeChange(event: Event): void {
+    this.assigneeFilter.set((event.target as HTMLSelectElement).value);
+  }
 
   protected statusLabel(status: number): string {
     return TicketStatus[status];

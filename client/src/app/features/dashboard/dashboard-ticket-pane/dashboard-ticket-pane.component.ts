@@ -1,74 +1,107 @@
-import { Component, Input, inject, signal } from '@angular/core';
+import { Component, Input, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { TicketListItem, TicketStatus, TicketPriority } from '../../../core/models/ticket.model';
-import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 export interface DashboardTicketFilters {
   status?: TicketStatus;
   priority?: TicketPriority;
   categoryId?: string;
   search?: string;
-  assignedToMe?: boolean;
+  assignedToId?: string;
   unassignedOnly?: boolean;
   excludeStatus?: TicketStatus;
   excludeStatuses?: TicketStatus[];
 }
 
+export type TicketSortColumn = 'title' | 'status' | 'priority' | 'updated';
+
 @Component({
   selector: 'app-dashboard-ticket-pane',
   standalone: true,
-  imports: [CommonModule, RouterLink, SpinnerComponent],
+  imports: [CommonModule, RouterLink, EmptyStateComponent],
   templateUrl: './dashboard-ticket-pane.component.html',
   styleUrl: './dashboard-ticket-pane.component.scss',
 })
 export class DashboardTicketPaneComponent {
   @Input() title: string = 'Tickets';
   @Input() set filters(value: DashboardTicketFilters) {
-    this.filtersSignal.set(value);
+    // Parents pass a fresh object literal on every change detection cycle, so
+    // only react when the filter content actually changes.
+    const key = JSON.stringify(value ?? {});
+    if (key === this.filtersKey) return;
+    this.filtersKey = key;
+    this.filtersSignal.set(value ?? {});
   }
   @Input() emptyMessage: string = 'No tickets to display.';
+  @Input() emptyTitle: string = 'No tickets found';
+  @Input() emptyIcon: string = '📋';
+  @Input() pageSize: number = 9;
 
   protected readonly TicketStatus = TicketStatus;
   protected readonly TicketPriority = TicketPriority;
 
   protected readonly filtersSignal = signal<DashboardTicketFilters>({});
+  protected readonly sortBy = signal<TicketSortColumn>('updated');
+  protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
+  protected readonly page = signal(1);
+
+  protected readonly skeletonRows = [1, 2, 3, 4, 5];
+
+  private filtersKey = '';
 
   protected readonly tickets = httpResource<TicketListItem[]>(
     () => this.buildTicketUrl(),
     { defaultValue: [] },
   );
 
+  private readonly queryKey = computed(() =>
+    JSON.stringify([this.filtersSignal(), this.sortBy(), this.sortDirection()]));
+
+  protected readonly totalCount = computed(() => this.tickets.value().length);
+
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalCount() / this.pageSize)));
+
+  protected readonly pagedTickets = computed(() => {
+    const start = (this.page() - 1) * this.pageSize;
+    return this.tickets.value().slice(start, start + this.pageSize);
+  });
+
+  protected readonly rangeStart = computed(() =>
+    this.totalCount() === 0 ? 0 : (this.page() - 1) * this.pageSize + 1);
+
+  protected readonly rangeEnd = computed(() =>
+    Math.min(this.page() * this.pageSize, this.totalCount()));
+
+  constructor() {
+    // Any change to the query (filters or sorting) restarts the list at page 1.
+    effect(() => {
+      this.queryKey();
+      this.page.set(1);
+    });
+  }
+
   private buildTicketUrl(): string {
     const filters = this.filtersSignal();
-    let url = '/api/tickets';
     const params = new URLSearchParams();
 
-    if (filters.status !== undefined) {
-      params.append('status', filters.status.toString());
-    }
-    if (filters.priority !== undefined) {
-      params.append('priority', filters.priority.toString());
-    }
-    if (filters.categoryId) {
-      params.append('categoryId', filters.categoryId);
-    }
-    if (filters.search) {
-      params.append('search', filters.search);
-    }
-    if (filters.unassignedOnly) {
-      params.append('unassignedOnly', 'true');
-    }
-    if (filters.excludeStatus !== undefined) {
-      params.append('excludeStatus', filters.excludeStatus.toString());
-    }
+    if (filters.status !== undefined) params.append('status', filters.status.toString());
+    if (filters.priority !== undefined) params.append('priority', filters.priority.toString());
+    if (filters.categoryId) params.append('categoryId', filters.categoryId);
+    if (filters.search) params.append('search', filters.search);
+    if (filters.assignedToId) params.append('assignedToId', filters.assignedToId);
+    if (filters.unassignedOnly) params.append('unassignedOnly', 'true');
+    if (filters.excludeStatus !== undefined) params.append('excludeStatus', filters.excludeStatus.toString());
     if (filters.excludeStatuses && filters.excludeStatuses.length > 0) {
       params.append('excludeStatuses', filters.excludeStatuses.join(','));
     }
+    params.append('sortBy', this.sortBy());
+    params.append('sortDirection', this.sortDirection());
 
-    const queryString = params.toString();
-    return queryString ? `${url}?${queryString}` : url;
+    return `/api/tickets?${params.toString()}`;
   }
 
   protected statusLabel(status: TicketStatus): string {
@@ -79,16 +112,29 @@ export class DashboardTicketPaneComponent {
     return TicketPriority[priority];
   }
 
-  protected getPriorityClass(priority: TicketPriority): string {
-    switch (priority) {
-      case TicketPriority.High:
-        return 'priority--high';
-      case TicketPriority.Medium:
-        return 'priority--medium';
-      case TicketPriority.Low:
-        return 'priority--low';
-      default:
-        return 'priority--default';
+  protected statusClass(status: TicketStatus): string {
+    return `status--${TicketStatus[status].toLowerCase()}`;
+  }
+
+  protected priorityClass(priority: TicketPriority): string {
+    return `priority--${TicketPriority[priority].toLowerCase()}`;
+  }
+
+  protected sort(column: TicketSortColumn): void {
+    if (this.sortBy() === column) {
+      this.sortDirection.update(direction => (direction === 'asc' ? 'desc' : 'asc'));
+      return;
     }
+    this.sortBy.set(column);
+    this.sortDirection.set(column === 'title' ? 'asc' : 'desc');
+  }
+
+  protected sortIndicator(column: TicketSortColumn): string {
+    if (this.sortBy() !== column) return '';
+    return this.sortDirection() === 'asc' ? '↑' : '↓';
+  }
+
+  protected setPage(next: number): void {
+    this.page.set(Math.min(Math.max(1, next), this.totalPages()));
   }
 }
