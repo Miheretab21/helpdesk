@@ -6,7 +6,54 @@
     }
   </header>
 
-  <ng-content></ng-content>
+  <div class="dashboard-pane__filters" role="search">
+    <label class="pane-filter pane-filter--search">
+      <span class="pane-filter__label">Search tickets</span>
+      <input
+        type="search"
+        name="ticketSearch"
+        placeholder="Find by title, e.g. Wi-Fi or fire"
+        [value]="searchTerm()"
+        (input)="onSearchInput($event)" />
+    </label>
+    @if (showStatusFilter) {
+      <label class="pane-filter">
+        <span class="pane-filter__label">Status</span>
+        <select name="status" [value]="statusSelection() ?? ''" (change)="onStatusChange($event)">
+          <option value="">All statuses</option>
+          @for (status of statusOptions; track status) {
+            <option [value]="status">{{ statusLabel(status) }}</option>
+          }
+        </select>
+      </label>
+    }
+    <label class="pane-filter">
+      <span class="pane-filter__label">Priority</span>
+      <select name="priority" [value]="prioritySelection() ?? ''" (change)="onPriorityChange($event)">
+        <option value="">All priorities</option>
+        @for (priority of priorityOptions; track priority) {
+          <option [value]="priority">{{ priorityLabel(priority) }}</option>
+        }
+      </select>
+    </label>
+    @if (showAssigneeFilter) {
+      <label class="pane-filter">
+        <span class="pane-filter__label">Assignee</span>
+        <select name="assignee" [value]="assigneeSelection()" (change)="onAssigneeChange($event)">
+          <option value="">All assignees</option>
+          <option value="unassigned">Unassigned</option>
+          @for (agent of assignees; track agent.id) {
+            <option [value]="agent.id">{{ agent.fullName }}</option>
+          }
+        </select>
+      </label>
+    }
+    @if (hasActiveFilters()) {
+      <button type="button" class="btn btn--secondary" (click)="clearFilters()">Clear filters</button>
+    }
+
+    <ng-content></ng-content>
+  </div>
 
   @if (tickets.isLoading()) {
     <div class="dashboard-pane__skeleton" aria-hidden="true">
@@ -25,8 +72,8 @@
   } @else if (totalCount() === 0) {
     <app-empty-state
       [icon]="emptyIcon"
-      [title]="emptyTitle"
-      [message]="emptyMessage">
+      [title]="hasActiveFilters() ? 'No matching tickets' : emptyTitle"
+      [message]="hasActiveFilters() ? 'No tickets match your filters. Try adjusting or clearing them.' : emptyMessage">
     </app-empty-state>
   } @else {
     <div class="tickets-table">

@@ -34,7 +34,7 @@
       }
 
       <div class="edit-ticket__actions">
-        <a [routerLink]="['/tickets', id()]" class="btn">Cancel</a>
+        <button type="button" [routerLink]="['/tickets', id()]" class="btn btn--secondary">Cancel</button>
         <button type="submit" class="btn btn--primary" [disabled]="submitting()">
           {{ submitting() ? 'Saving…' : 'Save Changes' }}
         </button>

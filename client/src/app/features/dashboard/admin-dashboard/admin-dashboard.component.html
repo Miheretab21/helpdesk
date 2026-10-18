@@ -20,7 +20,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.4 12.2l2.4 2.4 4.8-5"/></svg>
           </span>
           <span class="sidebar-nav__label">Assigned Tickets</span>
-          <span class="sidebar-nav__item__count">{{ getAssignedCount() }}</span>
         </button>
         <button
           (click)="setActivePane(AdminDashboardPane.All)"
@@ -31,7 +30,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>
           </span>
           <span class="sidebar-nav__label">All Tickets</span>
-          <span class="sidebar-nav__item__count">{{ getTotalTickets() }}</span>
         </button>
         <button
           (click)="setActivePane(AdminDashboardPane.Unassigned)"
@@ -42,11 +40,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l1.7 2.8h5.6L16.5 13h4"/><path d="M5.2 5.5h13.6l1.7 7.5v5.5H3.5V13z"/></svg>
           </span>
           <span class="sidebar-nav__label">Unassigned</span>
-          <span
-            class="sidebar-nav__item__count"
-            [class.count--alert]="(adminData.value()?.unassignedBacklog ?? 0) > 0">
-            {{ adminData.value()?.unassignedBacklog ?? 0 }}
-          </span>
         </button>
       </div>
 
@@ -62,7 +55,6 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/></svg>
             </span>
             <span class="sidebar-nav__label">{{ item.label }}</span>
-            <span class="sidebar-nav__item__count">{{ item.count }}</span>
           </button>
         }
       </div>
@@ -112,30 +104,33 @@
           <app-dashboard-ticket-pane
             title="Assigned Tickets"
             [filters]="ticketFilters()"
+            [showStatusFilter]="false"
+            [showAssigneeFilter]="true"
+            [assignees]="assignees()"
             emptyIcon="✅"
             emptyTitle="No assigned tickets"
             emptyMessage="Tickets currently owned by an agent will appear here.">
-            <ng-container *ngTemplateOutlet="ticketToolbar" />
           </app-dashboard-ticket-pane>
         }
         @case (AdminDashboardPane.All) {
           <app-dashboard-ticket-pane
             title="All Tickets"
             [filters]="ticketFilters()"
+            [showAssigneeFilter]="true"
+            [assignees]="assignees()"
             emptyIcon="🎫"
             emptyTitle="No tickets found"
             emptyMessage="No tickets match the current search or filter.">
-            <ng-container *ngTemplateOutlet="ticketToolbar" />
           </app-dashboard-ticket-pane>
         }
         @case (AdminDashboardPane.Unassigned) {
           <app-dashboard-ticket-pane
             title="Unassigned Tickets"
             [filters]="ticketFilters()"
+            [showStatusFilter]="false"
             emptyIcon="✅"
             emptyTitle="Nothing unassigned"
             emptyMessage="Every ticket currently has an owner.">
-            <ng-container *ngTemplateOutlet="ticketToolbar" />
           </app-dashboard-ticket-pane>
         }
         @case (AdminDashboardPane.ByStatus) {
@@ -143,9 +138,11 @@
             <app-dashboard-ticket-pane
               [title]="statusLabel(selectedStatus()!)"
               [filters]="ticketFilters()"
+              [showStatusFilter]="false"
+              [showAssigneeFilter]="selectedStatus() !== TicketStatus.New"
+              [assignees]="assignees()"
               emptyTitle="No tickets with this status"
               emptyMessage="Try a different status or clear the search.">
-              <ng-container *ngTemplateOutlet="ticketToolbar" />
             </app-dashboard-ticket-pane>
           }
         }
@@ -156,7 +153,6 @@
             emptyIcon="🕓"
             emptyTitle="No recent activity"
             emptyMessage="Ticket updates will appear here as they happen.">
-            <ng-container *ngTemplateOutlet="ticketToolbar" />
           </app-dashboard-ticket-pane>
         }
         @case (AdminDashboardPane.UserManagement) {
@@ -166,29 +162,4 @@
     }
   </main>
 </div>
-
-<!-- Shared ticket toolbar, projected into the ticket card so it reads as one surface. -->
-<ng-template #ticketToolbar>
-  <form class="dashboard-toolbar" role="search" (submit)="$event.preventDefault()">
-    <label class="dashboard-toolbar__field dashboard-toolbar__field--search">
-      <span class="dashboard-toolbar__label">Search tickets</span>
-      <input
-        type="search"
-        name="ticketSearch"
-        placeholder="Find by title, e.g. Wi-Fi or fire"
-        [value]="searchTerm()"
-        (input)="onSearch($event)" />
-    </label>
-    <label class="dashboard-toolbar__field">
-      <span class="dashboard-toolbar__label">Assignee</span>
-      <select name="assignee" [value]="assigneeFilter()" (change)="onAssigneeChange($event)">
-        <option value="">All assignees</option>
-        <option value="unassigned">Unassigned</option>
-        @for (agent of assignees(); track agent.id) {
-          <option [value]="agent.id">{{ agent.fullName }}</option>
-        }
-      </select>
-    </label>
-  </form>
-</ng-template>
 

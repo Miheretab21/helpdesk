@@ -1,5 +1,5 @@
 <div class="ticket-detail">
-  <a routerLink="/" class="ticket-detail__back">← All tickets</a>
+  <button type="button" routerLink="/" class="btn btn--secondary ticket-detail__back">← All tickets</button>
   @if (ticket.isLoading()) {
     <div class="ticket-detail__state">
       <app-spinner size="large" />

@@ -30,6 +30,7 @@ public sealed class TicketsController : ControllerBase
     private readonly ITicketRepository _tickets;
     private readonly ITicketAttachmentRepository _attachments;
     private readonly ITicketAuditRepository _audit;
+    private readonly IUserRepository _users;
     private readonly IWebHostEnvironment _environment;
     public TicketsController(
         ICurrentUserService currentUser,
@@ -43,6 +44,7 @@ public sealed class TicketsController : ControllerBase
         ITicketRepository tickets,
         ITicketAttachmentRepository attachments,
         ITicketAuditRepository audit,
+        IUserRepository users,
         IWebHostEnvironment environment)
     {
         _currentUser = currentUser;
@@ -56,6 +58,7 @@ public sealed class TicketsController : ControllerBase
         _tickets = tickets;
         _attachments = attachments;
         _audit = audit;
+        _users = users;
         _environment = environment;
     }
 
@@ -159,7 +162,8 @@ public sealed class TicketsController : ControllerBase
             RequestingUserRole: _currentUser.Role);
 
         await _assignTicket.HandleAsync(command, ct);
-        await AddAuditAsync(id, "Assigned", $"Assigned to {request.AssignToUserId}", ct);
+        var assignee = await _users.GetByIdAsync(request.AssignToUserId, ct);
+        await AddAuditAsync(id, "Assigned", $"Assigned to {assignee?.FullName ?? request.AssignToUserId.ToString()}", ct);
         return NoContent();
     }
     [HttpPost("{id:guid}/cancel")]
@@ -274,7 +278,18 @@ public async Task<IActionResult> Edit(
     {
         await EnsureAccessAsync(id, ct);
         var entries = await _audit.ListByTicketAsync(id, ct);
-        return Ok(entries.Select(x => new AuditDto(x.Id, x.Action, x.Details, x.ActorId, x.OccurredAt)));
+        // Older audit rows embedded the raw assignee id (e.g. "Assigned to <guid>"); resolve
+        // any user id in the text to a display name so history stays human-readable.
+        var namesById = (await _users.ListAsync(ct)).ToDictionary(x => x.Id, x => x.FullName);
+        return Ok(entries.Select(x => new AuditDto(x.Id, x.Action, ResolveUserNames(x.Details, namesById), x.ActorId, x.OccurredAt)));
+    }
+
+    private static string? ResolveUserNames(string? details, IReadOnlyDictionary<Guid, string> namesById)
+    {
+        if (string.IsNullOrEmpty(details)) return details;
+        foreach (var (userId, fullName) in namesById)
+            details = details.Replace(userId.ToString(), fullName, StringComparison.OrdinalIgnoreCase);
+        return details;
     }
 
     [HttpPost("bulk")]

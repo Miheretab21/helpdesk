@@ -50,6 +50,52 @@
     border: 1px solid var(--line);
     border-radius: 12px;
   }
+
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    padding: 0 0 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+/* ---------- Filter toolbar ---------- */
+.user-filter {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  min-width: 190px;
+
+  &--search {
+    flex: 1 1 260px;
+  }
+
+  &__label {
+    color: var(--muted);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  input,
+  select {
+    min-height: 40px;
+    padding: .5rem .75rem;
+    color: var(--text);
+    background: rgba(8, 8, 14, .72);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  input:focus-visible,
+  select:focus-visible {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 108, 255, .32);
+  }
 }
 
 .users-table {

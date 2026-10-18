@@ -150,7 +150,7 @@
 /* Ticket workspace refinement */
 .ticket-detail {
   padding: 0; max-width: 1020px; margin: 0 auto;
-  &__back { display:inline-flex; padding:.35rem 0; color:#b9b1ff; font-size:.78rem; }
+  &__back { margin-bottom: 1rem; }
   &__header { align-items:flex-start; gap:1rem; padding:clamp(1.25rem,4vw,2.25rem); margin-bottom:1rem; background:linear-gradient(125deg,rgba(124,108,255,.17),rgba(18,18,26,.9) 52%); border:1px solid var(--line); border-radius:18px; h1 { font-size:clamp(1.6rem,4vw,2.35rem); letter-spacing:-.045em; } }
   &__meta { justify-content:flex-end; flex-wrap:wrap; }
   &__actions { margin-bottom:1rem; padding:.9rem; background:rgba(18,18,26,.78); border:1px solid var(--line); border-radius:14px; }

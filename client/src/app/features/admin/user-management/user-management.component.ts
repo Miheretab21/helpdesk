@@ -22,6 +22,25 @@ export class UserManagementComponent {
   protected readonly users = signal<UserListItem[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  // Search / role filter for the users table.
+  protected readonly userSearch = signal('');
+  protected readonly roleFilter = signal<UserRole | null>(null);
+
+  protected readonly filteredUsers = computed(() => {
+    const term = this.userSearch().trim().toLowerCase();
+    const role = this.roleFilter();
+    return this.users().filter((user) => {
+      const matchesTerm = !term ||
+        user.fullName.toLowerCase().includes(term) ||
+        user.email.toLowerCase().includes(term);
+      const matchesRole = role === null || user.role === role;
+      return matchesTerm && matchesRole;
+    });
+  });
+
+  protected readonly hasActiveFilters = computed(() =>
+    this.userSearch().trim() !== '' || this.roleFilter() !== null);
   
   // Modal state
   protected readonly showModal = signal(false);
@@ -195,5 +214,19 @@ export class UserManagementComponent {
       default:
         return 'role-badge--employee';
     }
+  }
+
+  protected onUserSearch(event: Event) {
+    this.userSearch.set((event.target as HTMLInputElement).value);
+  }
+
+  protected onRoleFilterChange(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.roleFilter.set(value === '' ? null : (parseInt(value, 10) as UserRole));
+  }
+
+  protected clearFilters() {
+    this.userSearch.set('');
+    this.roleFilter.set(null);
   }
 }

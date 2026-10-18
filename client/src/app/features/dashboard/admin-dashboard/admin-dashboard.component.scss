@@ -341,49 +341,6 @@
   }
 }
 
-/* Rendered as a header inside the ticket card (projected via <ng-content>),
-   so it uses a divider instead of its own surface. */
-.dashboard-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1rem;
-  padding: 0 0 1rem;
-  margin-bottom: 1rem;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--line);
-
-  &__field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    min-width: 190px;
-
-    &--search {
-      flex: 1 1 260px;
-    }
-  }
-
-  &__label {
-    color: var(--muted, #a0a0b1);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  input,
-  select {
-    min-height: 40px;
-    padding: 0.5rem 0.75rem;
-    color: var(--text, #f5f5f7);
-    background: rgba(8, 8, 14, 0.72);
-    border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
-    border-radius: 10px;
-  }
-}
-
 @media (max-width: 768px) {
   .dashboard-layout {
     grid-template-columns: 1fr;

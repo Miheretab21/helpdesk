@@ -51,7 +51,7 @@
     }
 
     <div class="create-ticket__actions">
-      <a routerLink="/" class="btn">Cancel</a>
+      <button type="button" routerLink="/" class="btn btn--secondary">Cancel</button>
       <button type="submit" class="btn btn--primary" [disabled]="!canSubmit()">
         {{ submitting() ? 'Creating…' : 'Create Ticket' }}
       </button>

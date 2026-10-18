@@ -19,7 +19,7 @@
     </div>
 
     <div class="ticket-list__filter-row">
-      <select [(ngModel)]="statusFilter" class="ticket-list__filter-select">
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" class="ticket-list__filter-select">
         <option [value]="null">All Statuses</option>
         <option [value]="TicketStatus.New">New</option>
         <option [value]="TicketStatus.Assigned">Assigned</option>
@@ -30,7 +30,7 @@
       </select>
 
       @if (shouldShowPriorityFilter()) {
-        <select [(ngModel)]="priorityFilter" class="ticket-list__filter-select">
+        <select [ngModel]="priorityFilter()" (ngModelChange)="priorityFilter.set($event)" class="ticket-list__filter-select">
           <option [value]="null">All Priorities</option>
           <option [value]="TicketPriority.Low">Low</option>
           <option [value]="TicketPriority.Medium">Medium</option>
@@ -39,7 +39,7 @@
         </select>
       }
 
-      <select [(ngModel)]="categoryFilter" class="ticket-list__filter-select">
+      <select [ngModel]="categoryFilter()" (ngModelChange)="categoryFilter.set($event)" class="ticket-list__filter-select">
         <option [value]="null">All Categories</option>
         @for (cat of categories.value(); track cat.id) {
           <option [value]="cat.id">{{ cat.name }}</option>

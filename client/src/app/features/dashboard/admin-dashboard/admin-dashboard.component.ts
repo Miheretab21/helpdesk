@@ -71,10 +71,6 @@ export class AdminDashboardComponent {
     this.users.value().filter(user => user.role !== UserRole.Employee),
   );
 
-  // Quick search + assignee filter shown above the ticket table.
-  protected readonly searchTerm = signal('');
-  protected readonly assigneeFilter = signal('');
-
   protected readonly statusCounts = computed(() => {
     const data = this.adminData.value();
     if (!data) return [];
@@ -87,15 +83,6 @@ export class AdminDashboardComponent {
       { status: TicketStatus.Cancelled, label: 'Cancelled', count: data.allTicketsByStatus[TicketStatus.Cancelled] || 0 },
     ];
   });
-
-  protected getTotalTickets(): number {
-    const counts = this.statusCounts();
-    return counts.reduce((sum, item) => sum + item.count, 0);
-  }
-
-  protected getAssignedCount(): number {
-    return this.adminData.value()?.allTicketsByStatus?.[TicketStatus.Assigned] ?? 0;
-  }
 
   // Status list for the sidebar, minus Assigned (promoted to a top-level queue).
   protected readonly statusFilterItems = computed(() =>
@@ -151,32 +138,11 @@ export class AdminDashboardComponent {
     }
   });
 
-  // Pane filters with the toolbar's search term and assignee selection applied.
-  protected readonly ticketFilters = computed<DashboardTicketFilters>(() => {
-    const filters: DashboardTicketFilters = { ...this.baseFilters() };
-    const assignee = this.assigneeFilter();
-
-    if (assignee === 'unassigned') {
-      filters.unassignedOnly = true;
-      filters.assignedToId = undefined;
-    } else if (assignee) {
-      filters.assignedToId = assignee;
-      filters.unassignedOnly = false;
-    }
-
-    const term = this.searchTerm().trim();
-    if (term) filters.search = term;
-
-    return filters;
-  });
-
-  protected onSearch(event: Event): void {
-    this.searchTerm.set((event.target as HTMLInputElement).value);
-  }
-
-  protected onAssigneeChange(event: Event): void {
-    this.assigneeFilter.set((event.target as HTMLSelectElement).value);
-  }
+  // Filters implied by the active pane. The pane's own toolbar layers the
+  // search / status / priority / assignee refinements on top.
+  protected readonly ticketFilters = computed<DashboardTicketFilters>(() => ({
+    ...this.baseFilters(),
+  }));
 
   protected statusLabel(status: number): string {
     return TicketStatus[status];

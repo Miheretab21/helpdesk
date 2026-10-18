@@ -24,42 +24,72 @@
       <p>No users found. <a (click)="openCreateModal()" href="javascript:void(0)">Create one</a>.</p>
     </div>
   } @else {
-    <div class="user-management__table">
-      <table class="users-table">
-        <thead>
-          <tr class="users-table__header-row">
-            <th class="users-table__cell">Name</th>
-            <th class="users-table__cell">Email</th>
-            <th class="users-table__cell">Role</th>
-            <th class="users-table__cell users-table__cell--actions">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (user of users(); track user.id) {
-            <tr class="users-table__row">
-              <td class="users-table__cell">{{ user.fullName }}</td>
-              <td class="users-table__cell">{{ user.email }}</td>
-              <td class="users-table__cell">
-                <span [class]="'role-badge ' + roleClass(user.role)">{{ UserRoleLabels[user.role] }}</span>
-              </td>
-              <td class="users-table__cell users-table__cell--actions">
-                <button
-                  (click)="openEditModal(user)"
-                  class="btn btn--small btn--secondary">
-                  Edit
-                </button>
-                <button
-                  (click)="deleteUser(user)"
-                  [disabled]="isSubmitting()"
-                  class="btn btn--small btn--danger">
-                  Delete
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="user-management__filters" role="search">
+      <label class="user-filter user-filter--search">
+        <span class="user-filter__label">Search users</span>
+        <input
+          type="search"
+          name="userSearch"
+          placeholder="Find by name or email…"
+          [value]="userSearch()"
+          (input)="onUserSearch($event)" />
+      </label>
+      <label class="user-filter">
+        <span class="user-filter__label">Role</span>
+        <select name="roleFilter" [value]="roleFilter() ?? ''" (change)="onRoleFilterChange($event)">
+          <option value="">All roles</option>
+          <option [value]="UserRole.Employee">{{ UserRoleLabels[UserRole.Employee] }}</option>
+          <option [value]="UserRole.Agent">{{ UserRoleLabels[UserRole.Agent] }}</option>
+          <option [value]="UserRole.Admin">{{ UserRoleLabels[UserRole.Admin] }}</option>
+        </select>
+      </label>
+      @if (hasActiveFilters()) {
+        <button type="button" class="btn btn--secondary" (click)="clearFilters()">Clear filters</button>
+      }
     </div>
+
+    @if (filteredUsers().length === 0) {
+      <div class="user-management__empty">
+        <p>No users match your filters. <a (click)="clearFilters()" href="javascript:void(0)">Clear filters</a>.</p>
+      </div>
+    } @else {
+      <div class="user-management__table">
+        <table class="users-table">
+          <thead>
+            <tr class="users-table__header-row">
+              <th class="users-table__cell">Name</th>
+              <th class="users-table__cell">Email</th>
+              <th class="users-table__cell">Role</th>
+              <th class="users-table__cell users-table__cell--actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of filteredUsers(); track user.id) {
+              <tr class="users-table__row">
+                <td class="users-table__cell">{{ user.fullName }}</td>
+                <td class="users-table__cell">{{ user.email }}</td>
+                <td class="users-table__cell">
+                  <span [class]="'role-badge ' + roleClass(user.role)">{{ UserRoleLabels[user.role] }}</span>
+                </td>
+                <td class="users-table__cell users-table__cell--actions">
+                  <button
+                    (click)="openEditModal(user)"
+                    class="btn btn--small btn--secondary">
+                    Edit
+                  </button>
+                  <button
+                    (click)="deleteUser(user)"
+                    [disabled]="isSubmitting()"
+                    class="btn btn--small btn--danger">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   }
 
   <!-- Modal -->

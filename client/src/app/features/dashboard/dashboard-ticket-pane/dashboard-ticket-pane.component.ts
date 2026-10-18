@@ -39,6 +39,12 @@ export class DashboardTicketPaneComponent {
   @Input() emptyTitle: string = 'No tickets found';
   @Input() emptyIcon: string = '📋';
   @Input() pageSize: number = 9;
+  // Hosts that already fix the status (e.g. a single-status pane) hide the
+  // redundant status dropdown.
+  @Input() showStatusFilter: boolean = true;
+  // Hosts that can resolve owners (admin) enable the assignee refinement.
+  @Input() showAssigneeFilter: boolean = false;
+  @Input() assignees: ReadonlyArray<{ id: string; fullName: string }> = [];
 
   protected readonly TicketStatus = TicketStatus;
   protected readonly TicketPriority = TicketPriority;
@@ -48,9 +54,66 @@ export class DashboardTicketPaneComponent {
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
   protected readonly page = signal(1);
 
+  // User-driven refinements shown in the pane toolbar, layered on top of the
+  // filters the host dashboard passes in.
+  protected readonly searchTerm = signal('');
+  protected readonly statusSelection = signal<TicketStatus | null>(null);
+  protected readonly prioritySelection = signal<TicketPriority | null>(null);
+  protected readonly assigneeSelection = signal('');
+
+  protected readonly statusOptions = [
+    TicketStatus.New,
+    TicketStatus.Assigned,
+    TicketStatus.InProgress,
+    TicketStatus.Resolved,
+    TicketStatus.Closed,
+    TicketStatus.Cancelled,
+  ];
+  protected readonly priorityOptions = [
+    TicketPriority.Low,
+    TicketPriority.Medium,
+    TicketPriority.High,
+    TicketPriority.Urgent,
+  ];
+
   protected readonly skeletonRows = [1, 2, 3, 4, 5];
 
   private filtersKey = '';
+
+  // Base filters combined with whatever the user picked in the toolbar.
+  private readonly effectiveFilters = computed<DashboardTicketFilters>(() => {
+    const filters: DashboardTicketFilters = { ...this.filtersSignal() };
+
+    const term = this.searchTerm().trim();
+    if (term) filters.search = term;
+
+    const status = this.statusSelection();
+    if (status !== null) {
+      filters.status = status;
+      filters.excludeStatus = undefined;
+      filters.excludeStatuses = undefined;
+    }
+
+    const priority = this.prioritySelection();
+    if (priority !== null) filters.priority = priority;
+
+    const assignee = this.assigneeSelection();
+    if (assignee === 'unassigned') {
+      filters.unassignedOnly = true;
+      filters.assignedToId = undefined;
+    } else if (assignee) {
+      filters.assignedToId = assignee;
+      filters.unassignedOnly = false;
+    }
+
+    return filters;
+  });
+
+  protected readonly hasActiveFilters = computed(() =>
+    this.searchTerm().trim() !== '' ||
+    this.statusSelection() !== null ||
+    this.prioritySelection() !== null ||
+    this.assigneeSelection() !== '');
 
   protected readonly tickets = httpResource<TicketListItem[]>(
     () => this.buildTicketUrl(),
@@ -58,7 +121,7 @@ export class DashboardTicketPaneComponent {
   );
 
   private readonly queryKey = computed(() =>
-    JSON.stringify([this.filtersSignal(), this.sortBy(), this.sortDirection()]));
+    JSON.stringify([this.effectiveFilters(), this.sortBy(), this.sortDirection()]));
 
   protected readonly totalCount = computed(() => this.tickets.value().length);
 
@@ -85,7 +148,7 @@ export class DashboardTicketPaneComponent {
   }
 
   private buildTicketUrl(): string {
-    const filters = this.filtersSignal();
+    const filters = this.effectiveFilters();
     const params = new URLSearchParams();
 
     if (filters.status !== undefined) params.append('status', filters.status.toString());
@@ -136,5 +199,30 @@ export class DashboardTicketPaneComponent {
 
   protected setPage(next: number): void {
     this.page.set(Math.min(Math.max(1, next), this.totalPages()));
+  }
+
+  protected onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  protected onStatusChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.statusSelection.set(value === '' ? null : (Number(value) as TicketStatus));
+  }
+
+  protected onPriorityChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.prioritySelection.set(value === '' ? null : (Number(value) as TicketPriority));
+  }
+
+  protected onAssigneeChange(event: Event): void {
+    this.assigneeSelection.set((event.target as HTMLSelectElement).value);
+  }
+
+  protected clearFilters(): void {
+    this.searchTerm.set('');
+    this.statusSelection.set(null);
+    this.prioritySelection.set(null);
+    this.assigneeSelection.set('');
   }
 }
